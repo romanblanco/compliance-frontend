@@ -1,11 +1,10 @@
-import { useLocation } from 'react-router-dom';
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import TestWrapper from '@/Utilities/TestWrapper';
+
 import { useMutation } from '@apollo/client';
 import { dispatchAction } from 'Utilities/Dispatcher';
 
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useLocation: jest.fn(),
-}));
 jest.mock('@apollo/client');
 jest.mock('Utilities/Dispatcher');
 
@@ -13,12 +12,7 @@ import DeleteReport from './DeleteReport.js';
 
 describe('DeleteReport', () => {
   beforeEach(() => {
-    useLocation.mockImplementation(() => ({
-      state: {
-        profile: { id: 'ID1' },
-      },
-    }));
-    useMutation.mockImplementation((query, options) => {
+    useMutation.mockImplementation((_query, options) => {
       return [
         function () {
           options.onCompleted();
@@ -29,8 +23,16 @@ describe('DeleteReport', () => {
   });
 
   it('expect to render an open modal without error', () => {
-    const component = mount(<DeleteReport />);
+    render(
+      <TestWrapper>
+        <DeleteReport />
+      </TestWrapper>
+    );
 
-    expect(toJson(component)).toMatchSnapshot();
+    expect(
+      screen.getByText('Deleting a report is permanent and cannot be undone.')
+    ).toBeInTheDocument();
   });
+
+  // TODO this should also test the deleting as well
 });

@@ -1,4 +1,4 @@
-import gql from 'graphql-tag';
+import { gql } from '@apollo/client';
 
 export const CREATE_PROFILE = gql`
   mutation CreateProfile($input: createProfileInput!) {
@@ -21,6 +21,16 @@ export const ASSOCIATE_SYSTEMS_TO_PROFILES = gql`
             id
             parentProfileId
             osMinorVersion
+            benchmark {
+              valueDefinitions {
+                defaultValue
+                description
+                id
+                refId
+                title
+                valueType
+              }
+            }
           }
         }
       }
@@ -62,6 +72,7 @@ export const UPDATE_PROFILE = gql`
         complianceThreshold
         businessObjectiveId
         description
+        values
       }
     }
   }

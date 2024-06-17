@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import propTypes from 'prop-types';
 import { COMPLIANCE_TABLE_DEFAULTS } from '@/constants';
 // eslint-disable-next-line
 import ComplianceRemediationButton from 'PresentationalComponents/ComplianceRemediationButton';
 import { TableToolsTable } from 'Utilities/hooks/useTableTools';
-import useFeature from 'Utilities/hooks/useFeature';
 import { toRulesArrayWithProfile } from 'Utilities/ruleHelpers';
 import RuleDetailsRow from './RuleDetailsRow';
 import emptyRows from './EmptyRows';
 import buildFilterConfig from './Filters';
 import defaultColumns from './Columns';
+import { growTableTree, itemIdentifier } from './helpers';
 
 const RulesTable = ({
   system,
@@ -23,17 +23,21 @@ const RulesTable = ({
   hidePassed = false,
   options,
   activeFilters,
+  showFailedCounts = false,
+  setRuleValues,
+  ruleValues,
+  onRuleValueReset,
   ...rulesTableProps
 }) => {
-  const manageColumnsEnabled = useFeature('manageColumns');
   const [selectedRules, setSelectedRules] = handleSelect
     ? [selectedRulesProp, handleSelect]
     : useState([]);
   const rules = toRulesArrayWithProfile(profileRules);
   const selectedRulesWithRemediations = (selectedRules) =>
     (selectedRules || []).filter((rule) => rule.remediationAvailable);
-  const showPassFailFilter =
-    columns.filter((c) => c.title === 'Passed').length > 0;
+  const showRuleStateFilter =
+    columns.filter((c) => c.title === 'Rule state').length > 0;
+
   const policies = profileRules
     .filter(({ profile }) => !!profile)
     .map(({ profile }) => ({
@@ -43,16 +47,23 @@ const RulesTable = ({
 
   const remediationAction = ({ selected }) => (
     <ComplianceRemediationButton
-      allSystems={[
-        {
-          id: system.id,
-          profiles: system.testResultProfiles,
-          ruleObjectsFailed: [],
-          supported: system.supported,
-        },
-      ]}
+      allSystems={selected.length > 0 ? [system] : undefined}
       selectedRules={selectedRulesWithRemediations(selected)}
     />
+  );
+
+  const DetailsRow = useMemo(
+    () =>
+      function Row(props) {
+        return (
+          <RuleDetailsRow
+            onValueChange={setRuleValues}
+            onRuleValueReset={onRuleValueReset}
+            {...props}
+          />
+        );
+      },
+    [setRuleValues]
   );
 
   return (
@@ -63,15 +74,15 @@ const RulesTable = ({
       isStickyHeader
       filters={{
         filterConfig: buildFilterConfig({
-          showPassFailFilter,
+          showRuleStateFilter,
           policies,
           ansibleSupportFilter,
         }),
         ...(hidePassed && {
           activeFilters: (currentActiveFilters) => ({
             ...currentActiveFilters,
-            passed: currentActiveFilters.passed
-              ? currentActiveFilters.passed
+            rulestate: currentActiveFilters.rulestate
+              ? currentActiveFilters.rulestate
               : ['failed'],
             ...activeFilters,
           }),
@@ -80,14 +91,18 @@ const RulesTable = ({
       options={{
         ...COMPLIANCE_TABLE_DEFAULTS,
         ...options,
-        identifier: (item) => `${item.profile.id}|${item.refId}`,
+        tableTree: growTableTree(
+          profileRules[0].profile,
+          rules,
+          showFailedCounts
+        ),
+        identifier: itemIdentifier,
         onSelect: (handleSelect || remediationsEnabled) && setSelectedRules,
         preselected: selectedRules,
-        detailsComponent: RuleDetailsRow,
+        detailsComponent: DetailsRow,
         emptyRows: emptyRows(columns),
         selectedFilter,
         ...(remediationsEnabled ? { dedicatedAction: remediationAction } : {}),
-        manageColumns: manageColumnsEnabled,
       }}
       {...rulesTableProps}
     />
@@ -107,6 +122,10 @@ RulesTable.propTypes = {
   columns: propTypes.array,
   options: propTypes.object,
   activeFilters: propTypes.object,
+  showFailedCounts: propTypes.number,
+  setRuleValues: propTypes.func,
+  ruleValues: propTypes.object,
+  onRuleValueReset: propTypes.func,
 };
 
 export default RulesTable;

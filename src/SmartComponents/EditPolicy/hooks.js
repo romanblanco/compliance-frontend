@@ -1,35 +1,30 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { usePolicy } from 'Mutations';
-import { useLinkToBackground, useAnchor } from 'Utilities/Router';
 import { dispatchNotification } from 'Utilities/Dispatcher';
 
-export const useLinkToPolicy = () => {
-  const anchor = useAnchor();
-  const linkToBackground = useLinkToBackground('/scappolicies');
-  return () => {
-    linkToBackground({ hash: anchor });
-  };
-};
-
-export const useOnSave = (policy, updatedPolicyHostsAndRules) => {
+export const useOnSave = (
+  policy,
+  updatedPolicyHostsAndRules,
+  { onSave: onSaveCallback, onError: onErrorCallback } = {}
+) => {
   const updatePolicy = usePolicy();
-  const linkToPolicy = useLinkToPolicy();
   const [isSaving, setIsSaving] = useState(false);
-  const onSave = () => {
+
+  const onSave = useCallback(() => {
     if (isSaving) {
       return Promise.resolve({});
     }
 
     setIsSaving(true);
     updatePolicy(policy, updatedPolicyHostsAndRules)
-      .then(() => {
+      .then((policy) => {
         setIsSaving(false);
         dispatchNotification({
           variant: 'success',
           title: 'Policy updated',
           autoDismiss: true,
         });
-        linkToPolicy();
+        onSaveCallback?.(policy);
       })
       .catch((error) => {
         setIsSaving(false);
@@ -38,9 +33,9 @@ export const useOnSave = (policy, updatedPolicyHostsAndRules) => {
           title: 'Error updating policy',
           description: error.message,
         });
-        linkToPolicy();
+        onErrorCallback?.();
       });
-  };
+  }, [isSaving, policy, updatedPolicyHostsAndRules]);
 
   return [isSaving, onSave];
 };

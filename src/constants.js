@@ -2,9 +2,10 @@
 import packageJson from './../package.json';
 import { conditionalFilterType } from '@redhat-cloud-services/frontend-components/ConditionalFilter';
 import { dispatchNotification } from 'Utilities/Dispatcher';
+import sortBy from 'lodash/sortBy';
 
-export const DEFAULT_TITLE = 'Compliance | Red Hat Insights';
-export const DEFAULT_TITLE_SUFFIX = ` - ${DEFAULT_TITLE}`;
+export const APP_ID = 'compliance';
+export const DEFAULT_TITLE = 'Compliance';
 
 export const COMPLIANCE_API_ROOT = '/api/compliance';
 export const COMPLIANCE_UI_ROOT = '/rhel/compliance';
@@ -17,7 +18,7 @@ export const API_HEADERS = {
 };
 
 export const supportedConfigsLink =
-  'https://access.redhat.com/documentation/en-us/red_hat_insights/2021/html/assessing_and_monitoring_security_policy_compliance_of_rhel_systems/con-compl-assess-overview_compl-assess-overview#con-compl-assess-supported-configurations_compl-assess-overview';
+  'https://access.redhat.com/articles/6644131';
 
 import React from 'react';
 import {
@@ -90,15 +91,15 @@ export const systemsPolicyFilterConfiguration = (policies) => [
   },
 ];
 
-const majorOsVersionsFromProfiles = (policies) =>
-  Array.from(new Set(policies.map((profile) => profile.majorOsVersion)));
+const osMajorVersionsFromProfiles = (policies) =>
+  Array.from(new Set(policies.map((profile) => profile.osMajorVersion)));
 
 export const systemsOsFilterConfiguration = (policies) => [
   {
     type: conditionalFilterType.checkbox,
     label: 'Operating system',
     filterString: (value) => `os_major_version = ${value}`,
-    items: majorOsVersionsFromProfiles(policies).map((osVersion) => ({
+    items: osMajorVersionsFromProfiles(policies).map((osVersion) => ({
       label: `RHEL ${osVersion}`,
       value: osVersion,
     })),
@@ -110,10 +111,12 @@ const toSystemsOsMinorFilterConfigurationItem =
     label: `RHEL ${majorVersion}`,
     value: majorVersion,
     groupSelectable: true,
-    items: osVersions[majorVersion].map((minorVersion) => ({
-      label: `RHEL ${majorVersion}.${minorVersion}`,
-      value: minorVersion,
-    })),
+    items: sortBy(osVersions[majorVersion])
+      .reverse()
+      .map((minorVersion) => ({
+        label: `RHEL ${majorVersion}.${minorVersion}`,
+        value: minorVersion,
+      })),
   });
 
 const emptyFilterDropDownItem = {
@@ -145,7 +148,7 @@ export const systemsOsMinorFilterConfiguration = (osMajorVersions) => {
       .filter((v) => !!v)
       .join(' OR '),
   ];
-  const osVersions = Object.keys(osMajorVersions);
+  const osVersions = sortBy(Object.keys(osMajorVersions).map(Number)).reverse();
 
   const items =
     osVersions.length > 0
@@ -165,11 +168,19 @@ export const systemsOsMinorFilterConfiguration = (osMajorVersions) => {
 export const COMPLIANT_SYSTEMS_FILTER_CONFIGURATION = [
   {
     type: conditionalFilterType.checkbox,
-    label: 'Compliant',
-    filterString: (value) => `compliant = ${value}`,
+    label: 'Compliance',
+    filterString: (value) => `${value}`,
     items: [
-      { label: 'Compliant', value: 'true' },
-      { label: 'Non-compliant', value: 'false' },
+      {
+        label: 'Compliant',
+        value: 'compliant = true AND supported_ssg = true',
+      },
+      {
+        label: 'Non-compliant',
+        value: 'compliant = false AND supported_ssg = true',
+      },
+      { label: 'Not supported', value: 'supported_ssg = false' },
+      { label: 'Never reported', value: 'reported = false' },
     ],
   },
   {
@@ -184,6 +195,20 @@ export const COMPLIANT_SYSTEMS_FILTER_CONFIGURATION = [
       { label: '70 - 89%', value: '70-90' },
       { label: '50 - 69%', value: '50-70' },
       { label: 'Less than 50%', value: '0-50' },
+    ],
+  },
+];
+
+export const COMPLIANCE_REPORT_TABLE_ADDITIONAL_FILTER = [
+  {
+    type: conditionalFilterType.checkbox,
+    label: 'Failed rule severity',
+    filterString: (value) => `failed_rules_with_severity ^ (${value})`,
+    items: [
+      { label: HIGH_SEVERITY, value: 'high' },
+      { label: MEDIUM_SEVERITY, value: 'medium' },
+      { label: LOW_SEVERITY, value: 'low' },
+      { label: UNKNOWN_SEVERITY, value: 'unknown' },
     ],
   },
 ];
@@ -204,10 +229,18 @@ export const COMPLIANCE_TABLE_DEFAULTS = {
       });
     },
   },
+  manageColumns: true,
 };
 
-export const features = {
-  pdfReport: true,
-  manageColumns: false,
-  systemsNotReporting: false,
+export const paletteColors = {
+  black300: '#D2D2D2', // '--pf-global--palette--black-300',
+  black200: '#F0F0F0', // --pf-global--palette--black-200,
+  blue200: '#73BCF7', // '--pf-global--palette--blue-200',
+  blue300: '#2B9AF3', //'--pf-global--palette--blue-300',
+  blue400: '#0066CC', //'--pf-global--palette--blue-400',
+  gold300: '#F4C145', //--pf-global--palette--gold-300',
+};
+
+export const backgroundColors = {
+  light300: '#f0f0f0', //'--pf-global--BackgroundColor--light-300',
 };

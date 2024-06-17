@@ -1,7 +1,8 @@
 import { Button, ModalVariant, TextContent } from '@patternfly/react-core';
 import propTypes from 'prop-types';
 import React from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import useNavigate from '@redhat-cloud-services/frontend-components-utilities/useInsightsNavigate';
 import { useMutation } from '@apollo/client';
 import { DELETE_REPORT } from 'Mutations';
 import { addNotification } from '@redhat-cloud-services/frontend-components-notifications/redux';
@@ -9,15 +10,15 @@ import { ComplianceModal } from 'PresentationalComponents';
 import { dispatchAction } from 'Utilities/Dispatcher';
 
 const DeleteReport = () => {
-  const history = useHistory();
-  const location = useLocation();
-  const { id } = location.state?.profile;
+  const navigate = useNavigate();
+  const { report_id: id } = useParams();
+
   const onClose = () => {
-    history.push(location.state.background);
+    navigate(-1);
   };
 
   const onDelete = () => {
-    history.push('/reports');
+    navigate('/reports');
   };
 
   const [deleteReport] = useMutation(DELETE_REPORT, {
@@ -43,11 +44,13 @@ const DeleteReport = () => {
       onClose();
     },
   });
+
   return (
     <ComplianceModal
       isOpen
       variant={ModalVariant.small}
-      title="Delete report"
+      title="Delete report?"
+      titleIconVariant="warning"
       ouiaId="DeleteReportModal"
       onClose={onClose}
       actions={[

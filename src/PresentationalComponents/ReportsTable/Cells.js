@@ -1,18 +1,19 @@
 import React from 'react';
 import propTypes from 'prop-types';
-import { Button, TextContent, Text, Progress } from '@patternfly/react-core';
+import { TextContent, Text } from '@patternfly/react-core';
 import { DownloadIcon } from '@patternfly/react-icons';
-import { Link } from 'react-router-dom';
 import {
-  BackgroundLink,
   PolicyPopover,
   GreySmallText,
   UnsupportedSSGVersion,
+  LinkWithPermission as Link,
+  LinkButton,
 } from 'PresentationalComponents';
+import ReportChart from '../../SmartComponents/ReportDetails/Components/ReportChart';
 
 export const Name = (profile) => (
   <TextContent>
-    <Link to={'/reports/' + profile.id} style={{ marginRight: '.5rem' }}>
+    <Link to={`/reports/${profile.id}`} style={{ marginRight: '.5rem' }}>
       {profile.policy?.name}
     </Link>
     <React.Fragment>
@@ -27,24 +28,25 @@ Name.propTypes = {
 };
 
 export const OperatingSystem = ({
-  majorOsVersion,
-  ssgVersion,
+  osMajorVersion,
   unsupportedHostCount,
+  benchmark,
   policy,
 }) => {
+  const { version: ssgVersion } = benchmark || {};
   const supported = unsupportedHostCount === 0;
-  ssgVersion = 'SSG: ' + ssgVersion;
+  const ssgVersionLabel = 'SSG: ' + ssgVersion;
 
   return (
     <React.Fragment>
-      RHEL {majorOsVersion}
+      RHEL {osMajorVersion}
       {policy === null && ssgVersion && (
         <Text>
           <GreySmallText>
             {supported ? (
-              ssgVersion
+              ssgVersionLabel
             ) : (
-              <UnsupportedSSGVersion>{ssgVersion}</UnsupportedSSGVersion>
+              <UnsupportedSSGVersion>{ssgVersionLabel}</UnsupportedSSGVersion>
             )}
           </GreySmallText>
         </Text>
@@ -54,45 +56,20 @@ export const OperatingSystem = ({
 };
 
 OperatingSystem.propTypes = {
-  majorOsVersion: propTypes.string,
-  ssgVersion: propTypes.string,
+  osMajorVersion: propTypes.string,
+  benchmark: propTypes.object,
   unsupportedHostCount: propTypes.number,
   policy: propTypes.object,
 };
 
-export const CompliantSystems = ({
-  testResultHostCount = 0,
-  compliantHostCount = 0,
-  unsupportedHostCount = 0,
-}) => {
-  const tooltipText =
-    'Insights cannot provide a compliance score for systems running an unsupported ' +
-    'version of the SSG at the time this report was created, as the SSG version was not supported by RHEL.';
+export const CompliantSystems = (profile) => {
   return (
     <React.Fragment>
-      <Progress
-        aria-label="Compliant systems"
-        measureLocation={'outside'}
-        value={
-          testResultHostCount
-            ? (100 / testResultHostCount) * compliantHostCount
-            : 0
-        }
+      <ReportChart
+        profile={profile}
+        hasLegend={false}
+        chartClass="report-table-chart-container"
       />
-      <GreySmallText>
-        {`${compliantHostCount} of ${testResultHostCount} systems `}
-
-        {unsupportedHostCount > 0 && (
-          <UnsupportedSSGVersion
-            {...{ tooltipText }}
-            style={{ marginLeft: '.5em' }}
-          >
-            <strong className="ins-c-warning-text">
-              {unsupportedHostCount} unsupported
-            </strong>
-          </UnsupportedSSGVersion>
-        )}
-      </GreySmallText>
     </React.Fragment>
   );
 };
@@ -101,18 +78,24 @@ CompliantSystems.propTypes = {
   testResultHostCount: propTypes.number,
   compliantHostCount: propTypes.number,
   unsupportedHostCount: propTypes.number,
+  totalHostCount: propTypes.number,
 };
 
-export const PDFExportDownload = (profile) => {
-  return (
-    <BackgroundLink to={`/reports/${profile.id}/pdf`}>
-      <Button
-        ouiaId="ReportsDownloadReportPDFLink"
-        variant="plain"
-        className="pf-u-mr-md"
-      >
-        <DownloadIcon />
-      </Button>
-    </BackgroundLink>
-  );
+export const PDFExportDownload = ({ id }) => (
+  <Link
+    aria-label="Reports PDF download link"
+    to={`/reports/${id}/pdf`}
+    Component={LinkButton}
+    componentProps={{
+      className: 'pf-v5-u-mr-md',
+      variant: 'plain',
+      ouiaId: 'ReportsDownloadReportPDFLink',
+    }}
+  >
+    <DownloadIcon />
+  </Link>
+);
+
+PDFExportDownload.propTypes = {
+  id: propTypes.string,
 };

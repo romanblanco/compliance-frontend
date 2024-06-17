@@ -4,29 +4,37 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon,
 } from '@patternfly/react-icons';
-import { Text, Tooltip } from '@patternfly/react-core';
+import { Text, Tooltip, Icon } from '@patternfly/react-core';
 import { fixedPercentage } from 'Utilities/TextHelper';
 
 const CompliantIcon = (system) => {
-  if (system.rulesPassed + system.rulesFailed === 0) {
-    return <QuestionCircleIcon color="var(--pf-global--disabled-color--100)" />;
+  if (!system.supported && system.score !== 0) {
+    return (
+      <Icon color="var(--pf-v5-global--disabled-color--100)">
+        <QuestionCircleIcon />
+      </Icon>
+    );
   } else {
     return system.compliant ? (
-      <CheckCircleIcon color="var(--pf-global--success-color--200)" />
+      <Icon color="var(--pf-v5-global--success-color--200)">
+        <CheckCircleIcon />
+      </Icon>
     ) : (
-      <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+      <Icon>
+        <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" />
+      </Icon>
     );
   }
 };
 
 export const complianceScoreString = (system) => {
-  if (system.supported === false) {
+  if (!system.supported) {
     return ' Unsupported';
-  } else if (system.rulesPassed + system.rulesFailed === 0) {
+  } else if (!system.score && system.score !== 0) {
     return ' N/A';
+  } else {
+    return ' ' + fixedPercentage(system.score);
   }
-
-  return ' ' + fixedPercentage(system.score);
 };
 
 const ComplianceScore = (system) => (
@@ -38,11 +46,13 @@ const ComplianceScore = (system) => (
           'is a normalized weighted sum of rules selected for this policy.'
         }
       >
-        <CompliantIcon
-          key={`system-compliance-icon-${system.id}`}
-          {...system}
-        />
-        {complianceScoreString(system)}
+        <span>
+          <CompliantIcon
+            key={`system-compliance-icon-${system.id}`}
+            {...system}
+          />
+          {complianceScoreString(system)}
+        </span>
       </Tooltip>
     ) : (
       complianceScoreString(system)

@@ -83,7 +83,7 @@ export const EditPolicyDetails = ({ change, policy, refId }) => {
             defaultValue={policy.businessObjective}
           />
         </FormGroup>
-        <ProfileThresholdField previousThreshold={policy.complianceThreshold} />
+        <ProfileThresholdField previousThreshold={100} />
       </Form>
     </React.Fragment>
   );
@@ -98,7 +98,7 @@ EditPolicyDetails.propTypes = {
 };
 
 const mapStateToProps = (state) => {
-  const policy = JSON.parse(selector(state, 'profile'));
+  const policy = selector(state, 'profile');
   return {
     policy,
     refId: selector(state, 'refId'),

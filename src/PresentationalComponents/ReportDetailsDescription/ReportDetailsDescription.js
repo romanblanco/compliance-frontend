@@ -9,7 +9,7 @@ import {
   TextListItem,
   TextListItemVariants,
 } from '@patternfly/react-core';
-import { Link } from 'react-router-dom';
+import { LinkWithPermission as Link } from 'PresentationalComponents';
 
 const PropTypes = {
   children: propTypes.node,
@@ -36,9 +36,12 @@ const PolicyDescription = ({ profile }) => (
         <Text className="ins-c-non-bold-h2">Policy details</Text>
       </Dt>
       <Dt>Operating system</Dt>
-      <Dd>RHEL {profile.majorOsVersion}</Dd>
+      <Dd>RHEL {profile.osMajorVersion}</Dd>
       <Dt>Compliance threshold</Dt>
-      <Dd>{fixedPercentage(profile.complianceThreshold, 1)}</Dd>
+      <Dd>
+        {`${fixedPercentage(profile.complianceThreshold, 1)} of rules must be
+        passed for a system to be labeled "Compliant"`}
+      </Dd>
       <Dt>Business objective</Dt>
       <Dd>
         {profile.businessObjective ? profile.businessObjective.title : '--'}
@@ -53,7 +56,7 @@ PolicyDescription.propTypes = {
     id: propTypes.string,
     complianceThreshold: propTypes.number,
     businessObjective: propTypes.object,
-    majorOsVersion: propTypes.string,
+    osMajorVersion: propTypes.string,
     policy: propTypes.shape({
       id: propTypes.string,
     }),

@@ -9,7 +9,6 @@ jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   useParams: jest.fn().mockReturnValue({ policy_id: '1' }), // eslint-disable-line
   useLocation: jest.fn(),
-  useHistory: jest.fn(() => ({})),
 }));
 jest.mock('Utilities/Dispatcher');
 jest.mock('./hooks/usePDFExport', () => () => []);
@@ -43,11 +42,11 @@ describe('ReportDownload', function () {
     );
 
     const compliantSystemsCheckBox = screen.getByText('Compliant systems');
-    expect(compliantSystemsCheckBox).toBeDefined();
+    expect(compliantSystemsCheckBox).toBeInTheDocument();
     fireEvent.click(compliantSystemsCheckBox);
 
     const exportButton = screen.getByText('Export report');
-    expect(exportButton).toBeDefined();
+    expect(exportButton).toBeInTheDocument();
     fireEvent.click(exportButton);
 
     expect(exportFunMock).toHaveBeenCalled();

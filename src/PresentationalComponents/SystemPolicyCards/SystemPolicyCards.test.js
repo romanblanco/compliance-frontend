@@ -1,11 +1,7 @@
-import React from 'react';
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
+
 import SystemPolicyCards from './SystemPolicyCards';
-import { IntlProvider } from 'react-intl';
-import { mount } from 'enzyme';
-import toJson from 'enzyme-to-json';
-jest.mock('react-content-loader', () => ({
-  Instagram: 'Instagram',
-}));
 
 describe('SystemPolicyCards component', () => {
   const currentTime = new Date('2021-03-06T06:20:13Z');
@@ -23,19 +19,19 @@ describe('SystemPolicyCards component', () => {
       policyType: 'PCI-DSS v3 Control Baseline for Red Hat Enterprise Linux 7',
       compliant: false,
       supported: true,
-      ssgVersion: '0.1.45',
+      benchmark: { version: '0.1.45' },
     },
     {
-      rulesPassed: 0,
-      rulesFailed: 0,
+      rulesPassed: 1,
+      rulesFailed: 99,
       score: 0,
       lastScanned: null,
       refId: 'xccdf_org.ssgproject.content_profile_pci-dss2',
-      name: 'PCI-DSS v3 Control Baseline for Red Hat Enterprise Linux 7 2',
-      policyType: 'PCI-DSS v3 Control Baseline for Red Hat Enterprise Linux 7',
+      name: 'PCI-DSS v3 Control Baseline for Red Hat Enterprise Linux 8',
+      policyType: 'PCI-DSS v3 Control Baseline for Red Hat Enterprise Linux 8',
       compliant: false,
       supported: true,
-      ssgVersion: '0.1.45',
+      benchmark: { version: '0.1.46' },
     },
   ];
 
@@ -49,20 +45,18 @@ describe('SystemPolicyCards component', () => {
   });
 
   it('should render loading state', () => {
-    const wrappper = mount(
-      <IntlProvider locale={navigator.language}>
-        <SystemPolicyCards policies={policies} loading={true} />
-      </IntlProvider>
-    );
-    expect(toJson(wrappper)).toMatchSnapshot();
+    render(<SystemPolicyCards policies={policies} loading={true} />);
+
+    policies.forEach(({ name }) => {
+      expect(screen.queryByText(name)).not.toBeInTheDocument();
+    });
   });
 
-  it('should render real table', () => {
-    const wrappper = mount(
-      <IntlProvider locale={navigator.language}>
-        <SystemPolicyCards policies={policies} loading={false} />
-      </IntlProvider>
-    );
-    expect(toJson(wrappper)).toMatchSnapshot();
+  it('should render policy cards', () => {
+    render(<SystemPolicyCards policies={policies} loading={false} />);
+
+    policies.forEach(({ name }) => {
+      expect(screen.getAllByText(name)[0]).not.toBeNull();
+    });
   });
 });

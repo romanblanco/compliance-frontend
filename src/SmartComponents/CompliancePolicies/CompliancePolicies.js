@@ -1,20 +1,19 @@
 import React, { useEffect } from 'react';
-import gql from 'graphql-tag';
 import { useLocation } from 'react-router-dom';
-import { useQuery } from '@apollo/client';
-import { Button, Grid } from '@patternfly/react-core';
+import { useQuery, gql } from '@apollo/client';
+import { Grid } from '@patternfly/react-core';
 import PageHeader, {
   PageHeaderTitle,
 } from '@redhat-cloud-services/frontend-components/PageHeader';
-import Main from '@redhat-cloud-services/frontend-components/Main';
 import ComplianceEmptyState from 'PresentationalComponents/ComplianceEmptyState';
 import {
-  BackgroundLink,
+  LinkWithPermission as Link,
   ErrorPage,
   LoadingPoliciesTable,
   PoliciesTable,
   StateView,
   StateViewPart,
+  LinkButton,
 } from 'PresentationalComponents';
 
 const QUERY = gql`
@@ -28,19 +27,11 @@ const QUERY = gql`
           refId
           complianceThreshold
           totalHostCount
-          majorOsVersion
+          osMajorVersion
           policyType
           policy {
             id
             name
-          }
-          benchmark {
-            id
-            title
-            version
-          }
-          hosts {
-            id
           }
           businessObjective {
             id
@@ -54,13 +45,19 @@ const QUERY = gql`
 
 export const CompliancePolicies = () => {
   const location = useLocation();
-  const createLink = (
-    <BackgroundLink to="/scappolicies/new">
-      <Button variant="primary" ouiaId="CreateNewPolicyButton">
-        Create new policy
-      </Button>
-    </BackgroundLink>
+  const CreateLink = () => (
+    <Link
+      to="/scappolicies/new"
+      Component={LinkButton}
+      componentProps={{
+        variant: 'primary',
+        ouiaId: 'CreateNewPolicyButton',
+      }}
+    >
+      Create new policy
+    </Link>
   );
+
   let { data, error, loading, refetch } = useQuery(QUERY);
   useEffect(() => {
     refetch();
@@ -78,7 +75,7 @@ export const CompliancePolicies = () => {
       <PageHeader className="page-header">
         <PageHeaderTitle title="SCAP policies" />
       </PageHeader>
-      <Main>
+      <section className="pf-v5-c-page__main-section">
         <StateView stateValues={{ error, data, loading }}>
           <StateViewPart stateKey="error">
             <ErrorPage error={error} />
@@ -91,15 +88,15 @@ export const CompliancePolicies = () => {
               <Grid hasGutter>
                 <ComplianceEmptyState
                   title="No policies"
-                  mainButton={createLink}
+                  mainButton={<CreateLink />}
                 />
               </Grid>
             ) : (
-              <PoliciesTable policies={policies} />
+              <PoliciesTable policies={policies} DedicatedAction={CreateLink} />
             )}
           </StateViewPart>
         </StateView>
-      </Main>
+      </section>
     </React.Fragment>
   );
 };

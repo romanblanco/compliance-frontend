@@ -1,15 +1,18 @@
 import React from 'react';
 import propTypes from 'prop-types';
-import gql from 'graphql-tag';
-import { useQuery } from '@apollo/client';
+import { useQuery, gql } from '@apollo/client';
 import { useParams } from 'react-router-dom';
 import PageHeader from '@redhat-cloud-services/frontend-components/PageHeader';
 import Skeleton, {
   SkeletonSize,
 } from '@redhat-cloud-services/frontend-components/Skeleton';
-import Main from '@redhat-cloud-services/frontend-components/Main';
-import { Breadcrumb, BreadcrumbItem } from '@patternfly/react-core';
-import { SystemDetails as ComplianceSystemDetails } from './ComplianceDetail';
+
+import {
+  PageSection,
+  Breadcrumb,
+  BreadcrumbItem,
+} from '@patternfly/react-core';
+import Details from './ComplianceDetail';
 import {
   BreadcrumbLinkItem,
   StateViewWithError,
@@ -19,7 +22,7 @@ import { InventoryDetails } from 'SmartComponents';
 import { useTitleEntity } from 'Utilities/hooks/useDocumentTitle';
 
 const QUERY = gql`
-  query System($inventoryId: String!) {
+  query SD_System($inventoryId: String!) {
     system(id: $inventoryId) {
       id
       name
@@ -45,11 +48,11 @@ export const SystemDetails = ({ route }) => {
             <BreadcrumbLinkItem to="/systems">Systems</BreadcrumbLinkItem>
             <BreadcrumbItem isActive>{systemName}</BreadcrumbItem>
           </Breadcrumb>
-          <InventoryDetails />
+          <InventoryDetails inventoryId={inventoryId} />
         </PageHeader>
-        <Main>
-          <ComplianceSystemDetails hidePassed inventoryId={inventoryId} />
-        </Main>
+        <PageSection>
+          <Details hidePassed inventoryId={inventoryId} />
+        </PageSection>
       </StateViewPart>
       <StateViewPart stateKey="loading">
         <PageHeader>

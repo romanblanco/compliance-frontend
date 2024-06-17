@@ -1,16 +1,16 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`FilterConfigBuilder categoryLabelForValue to return a matching category label 1`] = `"Compliant"`;
+exports[`FilterConfigBuilder categoryLabelForValue to return a matching category label 1`] = `"Compliance"`;
 
 exports[`FilterConfigBuilder categoryLabelForValue to return a matching category label 2`] = `"Systems meeting compliance"`;
 
 exports[`FilterConfigBuilder categoryLabelForValue to return a matching category label 3`] = `"Search term"`;
 
 exports[`FilterConfigBuilder initialDefaultState to return a matching category label 1`] = `
-Object {
-  "compliant": Array [],
-  "name": undefined,
-  "systemsmeetingcompliance": Array [],
+{
+  "compliance": [],
+  "name": "",
+  "systemsmeetingcompliance": [],
 }
 `;
 
@@ -21,12 +21,12 @@ exports[`FilterConfigBuilder labelForValue to return a matching label 2`] = `"0-
 exports[`FilterConfigBuilder labelForValue to return a matching label 3`] = `"Search term"`;
 
 exports[`FilterConfigBuilder returns a filterConfig 1`] = `
-Object {
-  "compliancescore": Array [],
-  "compliant": Array [],
-  "items": Array [
-    Object {
-      "filterValues": Object {
+{
+  "compliance": [],
+  "compliancescore": [],
+  "items": [
+    {
+      "filterValues": {
         "onChange": [Function],
         "value": "",
       },
@@ -35,14 +35,14 @@ Object {
       "placeholder": "Filter by name",
       "type": "text",
     },
-    Object {
-      "filterValues": Object {
-        "items": Array [
-          Object {
+    {
+      "filterValues": {
+        "items": [
+          {
             "label": "Compliant",
             "value": "true",
           },
-          Object {
+          {
             "label": "Non-compliant",
             "value": "false",
           },
@@ -50,27 +50,27 @@ Object {
         "onChange": [Function],
         "value": undefined,
       },
-      "id": "compliant",
-      "label": "Compliant",
-      "placeholder": "Filter by compliant",
+      "id": "compliance",
+      "label": "Compliance",
+      "placeholder": "Filter by compliance",
       "type": "checkbox",
     },
-    Object {
-      "filterValues": Object {
-        "items": Array [
-          Object {
+    {
+      "filterValues": {
+        "items": [
+          {
             "label": "90 - 100%",
             "value": "90-100",
           },
-          Object {
+          {
             "label": "70 - 89%",
             "value": "70-89",
           },
-          Object {
+          {
             "label": "50 - 69%",
             "value": "50-69",
           },
-          Object {
+          {
             "label": "Less than 50%",
             "value": "0-49",
           },

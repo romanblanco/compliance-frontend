@@ -1,11 +1,10 @@
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useQuery } from '@apollo/client';
-import gql from 'graphql-tag';
+import { useQuery, gql } from '@apollo/client';
 import PageHeader, {
   PageHeaderTitle,
 } from '@redhat-cloud-services/frontend-components/PageHeader';
-import Main from '@redhat-cloud-services/frontend-components/Main';
+
 import SkeletonTable from '@redhat-cloud-services/frontend-components/SkeletonTable';
 import {
   ReportsTable,
@@ -15,7 +14,7 @@ import {
 } from 'PresentationalComponents';
 
 const QUERY = gql`
-  query Profiles($filter: String!) {
+  query R_Profiles($filter: String!) {
     profiles(search: $filter, limit: 1000) {
       edges {
         node {
@@ -28,8 +27,7 @@ const QUERY = gql`
           testResultHostCount
           compliantHostCount
           unsupportedHostCount
-          majorOsVersion
-          ssgVersion
+          osMajorVersion
           complianceThreshold
           businessObjective {
             id
@@ -38,10 +36,6 @@ const QUERY = gql`
           policy {
             id
             name
-            benchmark {
-              id
-              version
-            }
           }
           benchmark {
             id
@@ -84,24 +78,25 @@ export const Reports = () => {
   }
 
   return (
-    <StateViewWithError stateValues={{ error, data, loading }}>
-      <StateViewPart stateKey="loading">
-        <ReportsHeader />
-        <Main>
-          <SkeletonTable colSize={3} rowSize={10} />
-        </Main>
-      </StateViewPart>
-      <StateViewPart stateKey="data">
-        <ReportsHeader />
-        <Main>
-          {showView ? (
-            <ReportsTable {...{ profiles }} />
-          ) : (
-            <ReportsEmptyState />
-          )}
-        </Main>
-      </StateViewPart>
-    </StateViewWithError>
+    <>
+      <ReportsHeader />
+      <StateViewWithError stateValues={{ error, data, loading }}>
+        <StateViewPart stateKey="loading">
+          <section className="pf-v5-c-page__main-section">
+            <SkeletonTable colSize={3} rowSize={10} />
+          </section>
+        </StateViewPart>
+        <StateViewPart stateKey="data">
+          <section className="pf-v5-c-page__main-section">
+            {showView ? (
+              <ReportsTable {...{ profiles }} />
+            ) : (
+              <ReportsEmptyState />
+            )}
+          </section>
+        </StateViewPart>
+      </StateViewWithError>
+    </>
   );
 };
 

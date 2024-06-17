@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import propTypes from 'prop-types';
 import { Tab, Badge } from '@patternfly/react-core';
 import { RoutedTabs } from 'PresentationalComponents';
@@ -37,25 +37,29 @@ const TabbedRules = ({
   columns,
   level = 0,
   ouiaId,
+  resetLink,
+  rulesPageLink,
+  setRuleValues,
+  ruleValues,
+  onRuleValueReset,
   ...rulesTableProps
 }) => {
-  const handleSelect = (
-    profile,
-    newOsMinorVersion,
-    profileSelectedRuleRefIds
-  ) => {
-    const filteredSelection = (selectedRuleRefIds || []).filter(
-      (selectionItem) =>
-        !matchesSelectionItem(selectionItem, profile, newOsMinorVersion)
-    );
+  const handleSelect = useCallback(
+    (profile, newOsMinorVersion, profileSelectedRuleRefIds) => {
+      const filteredSelection = (selectedRuleRefIds || []).filter(
+        (selectionItem) =>
+          !matchesSelectionItem(selectionItem, profile, newOsMinorVersion)
+      );
 
-    const newItem = {
-      id: profile.id,
-      osMinorVersion: newOsMinorVersion || profile.osMinorVersion,
-      ruleRefIds: profileSelectedRuleRefIds,
-    };
-    setSelectedRuleRefIds([newItem, ...filteredSelection]);
-  };
+      const newItem = {
+        id: profile.id,
+        osMinorVersion: newOsMinorVersion || profile.osMinorVersion,
+        ruleRefIds: profileSelectedRuleRefIds,
+      };
+      setSelectedRuleRefIds([newItem, ...filteredSelection]);
+    },
+    [selectedRuleRefIds]
+  );
 
   return (
     <RoutedTabs
@@ -65,11 +69,14 @@ const TabbedRules = ({
     >
       {tabsData?.map(({ profile, newOsMinorVersion, systemCount }) => (
         <Tab
+          aria-label={`Rules for RHEL ${profile.osMajorVersion}.${
+            profile.osMinorVersion || newOsMinorVersion
+          }`}
           key={eventKey(profile, newOsMinorVersion)}
           eventKey={eventKey(profile, newOsMinorVersion)}
           title={
             <span>
-              <span className="pf-u-pr-sm">
+              <span className="pf-v5-u-pr-sm">
                 <OsVersionText
                   profile={profile}
                   newOsMinorVersion={newOsMinorVersion}
@@ -95,6 +102,11 @@ const TabbedRules = ({
                 newOsMinorVersion
               ),
               handleSelect: setSelectedRuleRefIds ? handleSelect : undefined,
+              setRuleValues,
+              ruleValues,
+              onRuleValueReset,
+              resetLink: resetLink,
+              rulesPageLink: rulesPageLink,
             }}
           />
         </Tab>
@@ -126,6 +138,11 @@ TabbedRules.propTypes = {
   }),
   level: propTypes.number,
   ouiaId: propTypes.string,
+  resetLink: propTypes.bool,
+  rulesPageLink: propTypes.bool,
+  setRuleValues: propTypes.func,
+  ruleValues: propTypes.array,
+  onRuleValueReset: propTypes.func,
 };
 
 export default TabbedRules;

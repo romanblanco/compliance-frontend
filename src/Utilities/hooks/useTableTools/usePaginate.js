@@ -2,8 +2,8 @@ import { useState } from 'react';
 
 const usePaginate = (options = {}) => {
   const { perPage = 10 } = options;
-  const enablePagination = options?.pagination !== false;
-
+  const enablePagination =
+    options.pagination !== false && !options.showTreeTable;
   const [paginationState, setPaginationState] = useState({
     perPage,
     page: 1,

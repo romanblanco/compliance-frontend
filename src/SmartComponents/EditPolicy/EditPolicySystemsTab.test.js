@@ -1,32 +1,25 @@
-import EditPolicySystemsTab from './EditPolicySystemsTab.js';
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import TestWrapper from '@/Utilities/TestWrapper';
 
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useHistory: () => ({
-    push: jest.fn(),
-    location: {},
-  }),
-}));
+import EditPolicySystemsTab from './EditPolicySystemsTab.js';
 
 describe('EditPolicySystemsTab', () => {
   const defaultProps = {
     policy: {
       id: '12345abcde',
       osMajorVersion: '7',
-      policyOsMinorVersions: [1, 2, 3],
+      supportedOsVersions: ['1.2', '1.1', '1.3', '1.4'],
     },
-    newRuleTabs: false,
   };
 
-  it('expect to render without error', async () => {
-    const wrapper = shallow(<EditPolicySystemsTab {...defaultProps} />);
-    expect(toJson(wrapper)).toMatchSnapshot();
-  });
-
-  it('expect to render with new tabs alert', async () => {
-    const wrapper = shallow(
-      <EditPolicySystemsTab {...defaultProps} newRuleTabs={true} />
+  it('expect to render the Inventory Table', () => {
+    render(
+      <TestWrapper>
+        <EditPolicySystemsTab {...defaultProps} />
+      </TestWrapper>
     );
-    expect(toJson(wrapper)).toMatchSnapshot();
+
+    expect(screen.getByLabelText('Inventory Table')).toBeInTheDocument();
   });
 });

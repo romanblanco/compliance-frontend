@@ -1,15 +1,14 @@
-import React, { useLayoutEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   EmptyState,
   EmptyStateBody,
   Text,
   TextContent,
-  Title,
+  EmptyStateHeader,
+  EmptyStateFooter,
 } from '@patternfly/react-core';
-import gql from 'graphql-tag';
 import propTypes from 'prop-types';
 import { useQuery } from '@apollo/client';
-import EmptyTable from '@redhat-cloud-services/frontend-components/EmptyTable';
 import Spinner from '@redhat-cloud-services/frontend-components/Spinner';
 import { StateViewWithError, StateViewPart } from 'PresentationalComponents';
 import {
@@ -20,59 +19,7 @@ import {
 } from 'PresentationalComponents/TabbedRules';
 import { sortingByProp } from 'Utilities/helpers';
 import * as Columns from '@/PresentationalComponents/RulesTable/Columns';
-
-const PROFILES_QUERY = gql`
-  query Profiles($filter: String!) {
-    profiles(search: $filter) {
-      edges {
-        node {
-          id
-          name
-          refId
-          osMinorVersion
-          osMajorVersion
-          policy {
-            id
-          }
-          policyType
-          benchmark {
-            id
-            refId
-            latestSupportedOsMinorVersions
-            osMajorVersion
-          }
-          ssgVersion
-          rules {
-            id
-            title
-            severity
-            rationale
-            refId
-            description
-            remediationAvailable
-            identifier
-          }
-        }
-      }
-    }
-  }
-`;
-
-const BENCHMARKS_QUERY = gql`
-  query Benchmarks($filter: String!) {
-    benchmarks(search: $filter) {
-      nodes {
-        id
-        latestSupportedOsMinorVersions
-        profiles {
-          id
-          refId
-          ssgVersion
-        }
-      }
-    }
-  }
-`;
+import { BENCHMARKS_QUERY } from './constants';
 
 const getBenchmarkBySupportedOsMinor = (benchmarks, osMinorVersion) =>
   benchmarks.find((benchmark) =>
@@ -86,16 +33,19 @@ const getBenchmarkProfile = (benchmark, profileRefId) =>
 
 const EditPolicyRulesTabEmptyState = () => (
   <EmptyState>
-    <Title headingLevel="h5" size="lg">
-      No rules can be configured
-    </Title>
+    <EmptyStateHeader
+      titleText="No rules can be configured"
+      headingLevel="h5"
+    />
     <EmptyStateBody>
       This policy has no associated systems, and therefore no rules can be
       configured.
     </EmptyStateBody>
-    <EmptyStateBody>
-      Add at least one system to configure rules for this policy.
-    </EmptyStateBody>
+    <EmptyStateFooter>
+      <EmptyStateBody>
+        Add at least one system to configure rules for this policy.
+      </EmptyStateBody>
+    </EmptyStateFooter>
   </EmptyState>
 );
 
@@ -146,7 +96,8 @@ export const EditPolicyRulesTab = ({
   selectedRuleRefIds,
   setSelectedRuleRefIds,
   osMinorVersionCounts,
-  setNewRuleTabs,
+  setRuleValues,
+  ruleValues: ruleValuesProp,
 }) => {
   const osMajorVersion = policy?.osMajorVersion;
   const osMinorVersions = Object.keys(osMinorVersionCounts).sort();
@@ -156,8 +107,8 @@ export const EditPolicyRulesTab = ({
 
   const {
     data: benchmarksData,
-    error: benchmarksError,
-    loading: benchmarksLoading,
+    error,
+    loading,
   } = useQuery(BENCHMARKS_QUERY, {
     variables: {
       filter: benchmarkSearch,
@@ -169,60 +120,57 @@ export const EditPolicyRulesTab = ({
 
   const tabsData = toTabsData(policy, osMinorVersionCounts, benchmarks);
   const profileToOsMinorMap = tabsDataToOsMinorMap(tabsData);
-  const filter = Object.keys(profileToOsMinorMap)
-    .map((i) => `id = ${i}`)
-    .join(' OR ');
-  const {
-    data: profilesData,
-    error: profilesError,
-    loading: profilesLoading,
-  } = useQuery(PROFILES_QUERY, {
-    variables: {
-      filter,
-    },
-    skip: filter.length === 0,
-  });
-  const loadingState = profilesLoading || benchmarksLoading ? true : undefined;
-  const dataState =
-    !loadingState && tabsData?.length > 0 ? profilesData : undefined;
 
-  if (!loadingState) {
-    setNewRuleTabs(
-      !!tabsData.find((tab) =>
-        policy.policy.profiles.find(
-          (profile) => profile.osMinorVersion !== tab.newOsMinorVersion
-        )
-      )
-    );
-  }
+  const dataState = !loading && tabsData?.length > 0 ? tabsData : undefined;
 
-  useLayoutEffect(() => {
-    if (profilesData) {
-      const profiles = profilesData?.profiles.edges.map((p) => p.node) || [];
+  useEffect(() => {
+    if (policy.policy.profiles) {
+      const profiles = policy.policy.profiles;
       const profilesWithOs = extendProfilesByOsMinor(
         profiles,
         profileToOsMinorMap
       );
-      setSelectedRuleRefIds((prevSelection) =>
-        profilesWithRulesToSelection(profilesWithOs, prevSelection)
-      );
+      setSelectedRuleRefIds((prevSelection) => {
+        const newSelection = profilesWithRulesToSelection(
+          profilesWithOs,
+          prevSelection
+        );
+        return newSelection;
+      });
     }
-  }, [profilesData]);
-  const error = benchmarksError || profilesError;
+  }, [policy.policy.profiles]);
+
+  const ruleValues = (policy) => {
+    const mergeValues = (policyId, values) => {
+      return {
+        ...values,
+        ...(ruleValuesProp?.[policyId] || {}),
+      };
+    };
+
+    return Object.fromEntries(
+      policy?.policy?.profiles?.map(
+        ({ id, values, benchmark: { valueDefinitions } }) => [
+          id,
+          mergeValues(id, values, valueDefinitions),
+        ]
+      ) || []
+    );
+  };
 
   return (
     <StateViewWithError
       stateValues={{
         error,
         data: !error && dataState,
-        loading: loadingState,
-        empty: !loadingState && !dataState && !error,
+        loading,
+        empty: !loading && !dataState && !error,
       }}
     >
       <StateViewPart stateKey="loading">
-        <EmptyTable>
+        <EmptyState>
           <Spinner />
-        </EmptyTable>
+        </EmptyState>
       </StateViewPart>
       <StateViewPart stateKey="data">
         <TextContent>
@@ -232,16 +180,22 @@ export const EditPolicyRulesTab = ({
             must be customized independently.
           </Text>
         </TextContent>
-        <TabbedRules
-          columns={[Columns.Name, Columns.Severity, Columns.Remediation]}
-          tabsData={tabsData}
-          selectedRuleRefIds={selectedRuleRefIds}
-          setSelectedRuleRefIds={setSelectedRuleRefIds}
-          remediationsEnabled={false}
-          selectedFilter
-          level={1}
-          ouiaId="RHELVersions"
-        />
+        {tabsData.length > 0 && (
+          <TabbedRules
+            resetLink
+            rulesPageLink
+            selectedFilter
+            remediationsEnabled={false}
+            columns={[Columns.Name, Columns.Severity, Columns.Remediation]}
+            tabsData={tabsData}
+            ruleValues={ruleValues(policy)}
+            selectedRuleRefIds={selectedRuleRefIds}
+            setSelectedRuleRefIds={setSelectedRuleRefIds}
+            setRuleValues={setRuleValues}
+            level={1}
+            ouiaId="RHELVersions"
+          />
+        )}
       </StateViewPart>
       <StateViewPart stateKey="empty">
         <EditPolicyRulesTabEmptyState />
@@ -261,6 +215,8 @@ EditPolicyRulesTab.propTypes = {
   }),
   selectedRuleRefIds: propTypes.array,
   setSelectedRuleRefIds: propTypes.func,
+  setRuleValues: propTypes.func,
+  ruleValues: propTypes.array,
 };
 
 export default EditPolicyRulesTab;

@@ -3,39 +3,42 @@ import React from 'react';
 import propTypes from 'prop-types';
 import { NoSystemsTableWithWarning } from 'PresentationalComponents';
 import { SystemsTable } from 'SmartComponents';
-import { GET_SYSTEMS } from '../SystemsTable/constants';
 import * as Columns from '../SystemsTable/Columns';
+import EditSystemsButtonToolbarItem from './EditSystemsButtonToolbarItem';
 
-const PolicySystemsTab = ({ policy }) => (
-  <SystemsTable
-    columns={[
-      Columns.customName({
-        showLink: true,
-      }),
-      Columns.inventoryColumn('tags'),
-      Columns.OS,
-      Columns.SsgVersion,
-    ]}
-    showOsMinorVersionFilter={[policy.majorOsVersion]}
-    query={GET_SYSTEMS}
-    policyId={policy.id}
-    defaultFilter={`policy_id = ${policy.id}`}
-    showActions={false}
-    remediationsEnabled={false}
-    noSystemsTable={
-      policy?.hosts?.length === 0 && <NoSystemsTableWithWarning />
-    }
-    complianceThreshold={policy.complianceThreshold}
-  />
-);
+const PolicySystemsTab = ({ policy }) => {
+  return (
+    <SystemsTable
+      columns={[
+        Columns.customName({
+          showLink: true,
+        }),
+        Columns.inventoryColumn('tags'),
+        Columns.OS,
+        Columns.SsgVersion,
+      ]}
+      showOsMinorVersionFilter={[policy.osMajorVersion]}
+      policyId={policy.id}
+      defaultFilter={`policy_id = ${policy.id}`}
+      showActions={false}
+      remediationsEnabled={false}
+      noSystemsTable={
+        policy?.hosts?.length === 0 && <NoSystemsTableWithWarning />
+      }
+      complianceThreshold={policy.complianceThreshold}
+      dedicatedAction={<EditSystemsButtonToolbarItem policy={policy} />}
+    />
+  );
+};
 
 PolicySystemsTab.propTypes = {
   policy: propTypes.shape({
     id: propTypes.string.isRequired,
-    complianceThreshold: propTypes.number.isRequired,
-    majorOsVersion: propTypes.string.isRequired,
+    complianceThreshold: propTypes.string.isRequired,
+    osMajorVersion: propTypes.string.isRequired,
     hosts: propTypes.array.isRequired,
   }),
+  dedicatedAction: propTypes.object,
   systemTableProps: propTypes.object,
 };
 

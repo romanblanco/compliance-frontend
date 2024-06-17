@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import propTypes from 'prop-types';
-import { useParams } from 'react-router-dom';
-import gql from 'graphql-tag';
-import { useQuery } from '@apollo/client';
 import { Button, Spinner } from '@patternfly/react-core';
+import { useLocation, useParams } from 'react-router-dom';
+import useNavigate from '@redhat-cloud-services/frontend-components-utilities/useInsightsNavigate';
 import { useTitleEntity } from 'Utilities/hooks/useDocumentTitle';
 import {
   ComplianceModal,
@@ -11,82 +10,51 @@ import {
   StateViewPart,
 } from 'PresentationalComponents';
 import EditPolicyForm from './EditPolicyForm';
-import { useOnSave, useLinkToPolicy } from './hooks';
-
-export const MULTIVERSION_QUERY = gql`
-  query Profile($policyId: String!) {
-    profile(id: $policyId) {
-      id
-      name
-      refId
-      external
-      description
-      totalHostCount
-      compliantHostCount
-      complianceThreshold
-      majorOsVersion
-      osMajorVersion
-      lastScanned
-      policyType
-      policy {
-        id
-        name
-        refId
-        profiles {
-          id
-          ssgVersion
-          parentProfileId
-          name
-          refId
-          osMinorVersion
-          osMajorVersion
-          benchmark {
-            id
-            title
-            latestSupportedOsMinorVersions
-            osMajorVersion
-          }
-          rules {
-            title
-            severity
-            rationale
-            refId
-            description
-            remediationAvailable
-            identifier
-          }
-        }
-      }
-      businessObjective {
-        id
-        title
-      }
-      hosts {
-        id
-        osMinorVersion
-        osMajorVersion
-      }
-    }
-  }
-`;
+import { useOnSave } from './hooks';
+import usePolicyQuery from 'Utilities/hooks/usePolicyQuery';
 
 export const EditPolicy = ({ route }) => {
+  const navigate = useNavigate();
   const { policy_id: policyId } = useParams();
-  const { data, loading, error } = useQuery(MULTIVERSION_QUERY, {
-    variables: { policyId },
-  });
+  const location = useLocation();
+  const { data, error, loading } = usePolicyQuery({ policyId });
   const policy = data?.profile;
-  const linkToPolicy = useLinkToPolicy();
   const [updatedPolicy, setUpdatedPolicy] = useState(null);
   const [selectedRuleRefIds, setSelectedRuleRefIds] = useState([]);
   const [selectedSystems, setSelectedSystems] = useState([]);
+  const [ruleValues, setRuleValuesState] = useState({});
+
   const saveEnabled = updatedPolicy && !updatedPolicy.complianceThresholdValid;
   const updatedPolicyHostsAndRules = {
     ...updatedPolicy,
     selectedRuleRefIds,
     hosts: selectedSystems,
+    values: ruleValues,
   };
-  const [isSaving, onSave] = useOnSave(policy, updatedPolicyHostsAndRules);
+  const onSaveCallback = () => navigate(location.state?.returnTo || -1);
+
+  const [isSaving, onSave] = useOnSave(policy, updatedPolicyHostsAndRules, {
+    onSave: onSaveCallback,
+    onError: onSaveCallback,
+  });
+
+  const setRuleValues = (policyId, valueDefinition, valueValue) => {
+    const existingValues = Object.fromEntries(
+      policy?.policy.profiles.map((profile) => {
+        return [profile.id, profile.values];
+      }) || []
+    );
+
+    setRuleValuesState((currentValues) => ({
+      ...existingValues,
+      ...currentValues,
+      [policyId]: {
+        ...existingValues[policyId],
+        ...currentValues[policyId],
+        [valueDefinition.id]: valueValue,
+      },
+    }));
+  };
 
   const actions = [
     <Button
@@ -104,7 +72,7 @@ export const EditPolicy = ({ route }) => {
       key="cancel"
       ouiaId="EditPolicyCancelButton"
       variant="link"
-      onClick={() => linkToPolicy()}
+      onClick={onSaveCallback}
     >
       Cancel
     </Button>,
@@ -117,17 +85,20 @@ export const EditPolicy = ({ route }) => {
       isOpen
       position={'top'}
       style={{ minHeight: '350px' }}
+      width={1220}
       variant={'large'}
       ouiaId="EditPolicyModal"
       title={`Edit ${policy ? policy.name : ''}`}
-      onClose={() => linkToPolicy()}
+      onClose={onSaveCallback}
       actions={actions}
     >
-      <StateViewWithError stateValues={{ policy, loading, error }}>
+      <StateViewWithError
+        stateValues={{ data: policy && !loading, loading, error }}
+      >
         <StateViewPart stateKey="loading">
           <Spinner />
         </StateViewPart>
-        <StateViewPart stateKey="policy">
+        <StateViewPart stateKey="data">
           <EditPolicyForm
             {...{
               policy,
@@ -137,6 +108,8 @@ export const EditPolicy = ({ route }) => {
               setSelectedRuleRefIds,
               selectedSystems,
               setSelectedSystems,
+              setRuleValues,
+              ruleValues,
             }}
           />
         </StateViewPart>

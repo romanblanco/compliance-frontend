@@ -1,19 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import propTypes from 'prop-types';
 import {
-  Title,
   Button,
   Bullseye,
   EmptyState,
   EmptyStateBody,
-  EmptyStateSecondaryActions,
   EmptyStateVariant,
   EmptyStateIcon,
   List,
   ListItem,
+  EmptyStateActions,
+  EmptyStateHeader,
+  EmptyStateFooter,
 } from '@patternfly/react-core';
-import { ProgressBar } from 'PresentationalComponents';
-import { Link } from 'react-router-dom';
+import {
+  ProgressBar,
+  LinkWithPermission as Link,
+} from 'PresentationalComponents';
 import { WrenchIcon } from '@patternfly/react-icons';
 import { reduxForm, formValueSelector } from 'redux-form';
 import { connect } from 'react-redux';
@@ -22,7 +25,7 @@ import { withApollo } from '@apollo/client/react/hoc';
 import { usePolicy } from 'Mutations';
 import { dispatchNotification } from 'Utilities/Dispatcher';
 
-const EmtpyStateWithErrors = ({ errors }) =>
+const EmptyStateWithErrors = ({ errors }) =>
   errors && Array.isArray(errors) && errors.length > 0 ? (
     <EmptyStateBody className="wizard-failed-errors">
       <List>
@@ -33,7 +36,7 @@ const EmtpyStateWithErrors = ({ errors }) =>
     </EmptyStateBody>
   ) : null;
 
-EmtpyStateWithErrors.propTypes = {
+EmptyStateWithErrors.propTypes = {
   errors: propTypes.array,
 };
 
@@ -48,6 +51,7 @@ export const FinishedCreatePolicy = ({
   benchmarkId,
   systems,
   selectedRuleRefIds,
+  ruleValues: values,
 }) => {
   const [percent, setPercent] = useState(0);
   const [message, setMessage] = useState('This usually takes a minute or two.');
@@ -59,7 +63,7 @@ export const FinishedCreatePolicy = ({
     setPercent(progress * 100);
   };
 
-  useEffect(() => {
+  const submitForm = () => {
     const newPolicy = {
       cloneFromProfileId,
       description,
@@ -70,6 +74,7 @@ export const FinishedCreatePolicy = ({
       benchmarkId,
       hosts: systems,
       selectedRuleRefIds,
+      values,
     };
 
     updatePolicy(null, newPolicy, onProgress)
@@ -98,36 +103,44 @@ export const FinishedCreatePolicy = ({
           description: error.message,
         });
       });
+  };
+
+  useEffect(() => {
+    submitForm();
   }, []);
 
   return (
     <Bullseye>
       <EmptyState variant={EmptyStateVariant.full}>
-        <EmptyStateIcon icon={WrenchIcon} />
+        <EmptyStateHeader
+          titleText="Creating policy"
+          icon={<EmptyStateIcon icon={WrenchIcon} />}
+          headingLevel="h1"
+        />
         <br />
-        <Title headingLevel="h1" size="lg">
-          Creating policy
-        </Title>
+
         <EmptyStateBody>
           <ProgressBar percent={percent} failed={failed} />
         </EmptyStateBody>
-        <EmptyStateBody className={failed && 'wizard-failed-message'}>
-          {message}
-        </EmptyStateBody>
-        <EmtpyStateWithErrors error={errors} />
-        <EmptyStateSecondaryActions>
-          {(percent === 100 || failed) && (
-            <Button
-              variant={'primary'}
-              ouiaId="ReturnToAppButton"
-              onClick={() => {
-                onWizardFinish();
-              }}
-            >
-              {failed ? 'Back' : 'Return to application'}
-            </Button>
-          )}
-        </EmptyStateSecondaryActions>
+        <EmptyStateFooter>
+          <EmptyStateBody className={failed && 'wizard-failed-message'}>
+            {message}
+          </EmptyStateBody>
+          <EmptyStateWithErrors errors={errors} />
+          <EmptyStateActions>
+            {(percent === 100 || failed) && (
+              <Button
+                variant={'primary'}
+                ouiaId="ReturnToAppButton"
+                onClick={() => {
+                  onWizardFinish();
+                }}
+              >
+                {failed ? 'Back' : 'Return to application'}
+              </Button>
+            )}
+          </EmptyStateActions>
+        </EmptyStateFooter>
       </EmptyState>
     </Bullseye>
   );
@@ -144,23 +157,27 @@ FinishedCreatePolicy.propTypes = {
   complianceThreshold: propTypes.number,
   onWizardFinish: propTypes.func,
   selectedRuleRefIds: propTypes.arrayOf(propTypes.string).isRequired,
+  ruleValues: propTypes.object,
 };
 
 export const selector = formValueSelector('policyForm');
 
 export default compose(
-  connect((state) => ({
-    benchmarkId: selector(state, 'benchmark'),
-    businessObjective: selector(state, 'businessObjective'),
-    cloneFromProfileId: JSON.parse(selector(state, 'profile')).id,
-    refId: selector(state, 'refId'),
-    name: selector(state, 'name'),
-    description: selector(state, 'description'),
-    complianceThreshold:
-      parseFloat(selector(state, 'complianceThreshold')) || 100.0,
-    systems: selector(state, 'systems'),
-    selectedRuleRefIds: selector(state, 'selectedRuleRefIds'),
-  })),
+  connect((state) => {
+    return {
+      benchmarkId: selector(state, 'benchmark'),
+      businessObjective: selector(state, 'businessObjective'),
+      cloneFromProfileId: selector(state, 'profile').id,
+      refId: selector(state, 'refId'),
+      name: selector(state, 'name'),
+      description: selector(state, 'description'),
+      complianceThreshold:
+        parseFloat(selector(state, 'complianceThreshold')) || 100.0,
+      systems: selector(state, 'systems'),
+      selectedRuleRefIds: selector(state, 'selectedRuleRefIds'),
+      ruleValues: selector(state, 'ruleValues'),
+    };
+  }),
   reduxForm({
     form: 'policyForm',
     destroyOnUnmount: true,

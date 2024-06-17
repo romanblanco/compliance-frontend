@@ -12,7 +12,7 @@ import {
   TextVariants,
 } from '@patternfly/react-core';
 import { fixedPercentage } from 'Utilities/TextHelper';
-import { Link } from 'react-router-dom';
+import { LinkWithPermission as Link } from 'PresentationalComponents';
 import propTypes from 'prop-types';
 
 const PolicyPopover = ({ profile, position = 'top' }) => {
@@ -20,7 +20,7 @@ const PolicyPopover = ({ profile, position = 'top' }) => {
     policy,
     policyType,
     complianceThreshold,
-    majorOsVersion,
+    osMajorVersion,
     businessObjective,
   } = profile;
   return (
@@ -33,7 +33,12 @@ const PolicyPopover = ({ profile, position = 'top' }) => {
         </TextContent>
       }
       footerContent={
-        <Link to={'/scappolicies/' + policy?.id}>View policy</Link>
+        <Link
+          to={'/scappolicies/' + policy?.id}
+          className="pf-v5-u-font-size-md"
+        >
+          View policy
+        </Link>
       }
       bodyContent={
         <TextContent className="policy-details">
@@ -42,7 +47,7 @@ const PolicyPopover = ({ profile, position = 'top' }) => {
               Operating system
             </TextListItem>
             <TextListItem component={TextListItemVariants.dd}>
-              RHEL {majorOsVersion}
+              RHEL {osMajorVersion}
             </TextListItem>
             <TextListItem component={TextListItemVariants.dt}>
               Compliance threshold

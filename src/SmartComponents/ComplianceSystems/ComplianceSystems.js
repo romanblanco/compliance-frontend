@@ -1,25 +1,22 @@
 /* eslint-disable react/display-name */
 import React from 'react';
-import gql from 'graphql-tag';
-import { useQuery } from '@apollo/client';
+import { gql, useQuery } from '@apollo/client';
+import { nowrap } from '@patternfly/react-table';
 import PageHeader, {
   PageHeaderTitle,
 } from '@redhat-cloud-services/frontend-components/PageHeader';
-import Main from '@redhat-cloud-services/frontend-components/Main';
 import { StateViewPart, StateViewWithError } from 'PresentationalComponents';
 import { SystemsTable } from 'SmartComponents';
-import { GET_SYSTEMS } from '../SystemsTable/constants';
 import * as Columns from '../SystemsTable/Columns';
 
-const QUERY = gql`
+export const QUERY = gql`
   {
     profiles(search: "external = false and canonical = false") {
       edges {
         node {
           id
           name
-          refId
-          majorOsVersion
+          osMajorVersion
         }
       }
     }
@@ -35,9 +32,9 @@ export const ComplianceSystems = () => {
   return (
     <React.Fragment>
       <PageHeader className="page-header">
-        <PageHeaderTitle title="Compliance systems" />
+        <PageHeaderTitle title="Systems" />
       </PageHeader>
-      <Main>
+      <section className="pf-v5-c-page__main-section">
         <StateViewWithError stateValues={{ error, data, loading }}>
           <StateViewPart stateKey="data">
             {policies && (
@@ -46,28 +43,35 @@ export const ComplianceSystems = () => {
                   Columns.customName({
                     showLink: true,
                   }),
+                  Columns.inventoryColumn('groups', {
+                    requiresDefault: true,
+                    sortBy: ['groups'],
+                  }),
                   Columns.inventoryColumn('tags'),
                   Columns.OS,
                   Columns.Policies,
-                  Columns.inventoryColumn('updated', { isStatic: true }),
+                  Columns.inventoryColumn('updated', {
+                    props: { isStatic: true },
+                    transforms: [nowrap],
+                  }),
                 ]}
-                query={GET_SYSTEMS}
                 defaultFilter={DEFAULT_FILTER}
                 systemProps={{
                   isFullView: true,
                 }}
                 showOsMinorVersionFilter={policies.map(
-                  (policy) => policy.majorOsVersion
+                  (policy) => policy.osMajorVersion
                 )}
                 showComplianceSystemsInfo
                 enableEditPolicy={false}
                 remediationsEnabled={false}
                 policies={policies}
+                showGroupsFilter
               />
             )}
           </StateViewPart>
         </StateViewWithError>
-      </Main>
+      </section>
     </React.Fragment>
   );
 };

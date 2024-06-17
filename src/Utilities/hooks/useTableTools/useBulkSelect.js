@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { filterSelected } from './helper';
 
 const compileTitle = (itemsTotal, titleOption) => {
@@ -45,6 +45,7 @@ export const useBulkSelect = ({
   itemIdsInTable,
   itemIdsOnPage,
   identifier = 'id',
+  showTreeTable,
 }) => {
   const enableBulkSelect = !!onSelect;
   const [selectedIds, setSelectedItemIds] = useState(preselected);
@@ -74,12 +75,13 @@ export const useBulkSelect = ({
 
   const unselectAll = () => [];
   const selectNone = () => onSelectCallback(unselectAll);
-  const selectOne = (_, selected, key, row) =>
+  const selectOne = (_, selected, key, row) => {
     onSelectCallback(() =>
       selected
         ? selectItems([row[identifier]])
         : unselectItems([row[identifier]])
     );
+  };
 
   const selectPage = () =>
     onSelectCallback(() => {
@@ -106,13 +108,17 @@ export const useBulkSelect = ({
     ? {
         selectedIds,
         selectNone,
+        selectItems: (ids) => onSelectCallback(() => selectItems(ids)),
+        unselectItems: (ids) => onSelectCallback(() => unselectItems(ids)),
         tableProps: {
-          onSelect: total > 0 ? selectOne : undefined,
+          ...(!showTreeTable
+            ? { onSelect: total > 0 ? selectOne : undefined }
+            : {}),
           canSelectAll: false,
         },
         toolbarProps: {
           bulkSelect: {
-            toggleProps: { children: [title] },
+            toggleProps: { children: [title], count: total },
             isDisabled,
             items: [
               {
@@ -155,6 +161,7 @@ export const useBulkSelectWithItems = ({
   paginator,
   preselected,
   setPage,
+  ...options
 }) => {
   const enableBulkSelect = !!onSelect;
   const items = propItems.map((item) =>
@@ -171,15 +178,14 @@ export const useBulkSelectWithItems = ({
 
   const allCount = filtered ? filteredTotal : total;
 
-  const setPageMemo = useMemo(() => setPage, []);
-
   useEffect(() => {
-    if (paginatedTotal === 0) {
-      setPageMemo(-1);
+    if (paginatedTotal === 0 && setPage) {
+      setPage?.(-1);
     }
-  }, [paginatedTotal, setPageMemo]);
+  }, [paginatedTotal]);
 
   const { selectNone, selectedIds, ...bulkSelect } = useBulkSelect({
+    ...options,
     total: allCount,
     onSelect,
     preselected,

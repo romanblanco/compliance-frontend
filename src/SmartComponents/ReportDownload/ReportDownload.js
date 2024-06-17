@@ -3,13 +3,13 @@ import { Button, Spinner } from '@patternfly/react-core';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 // eslint-disable-next-line
-import { DownloadButton } from '@redhat-cloud-services/frontend-components-pdf-generator';
+import { DownloadButton } from '@redhat-cloud-services/frontend-components-pdf-generator/dist/esm/index';
 import {
   ComplianceModal,
   StateViewWithError,
   StateViewPart,
 } from 'PresentationalComponents';
-import { useLinkToBackground } from 'Utilities/Router';
+import useNavigate from '@redhat-cloud-services/frontend-components-utilities/useInsightsNavigate';
 import { GET_PROFILE } from './constants';
 import ExportPDFForm from './Components/ExportPDFForm';
 import usePDFExport from './hooks/usePDFExport';
@@ -18,7 +18,7 @@ import useExportSettings from './hooks/useExportSettings';
 // Provides that export settings modal accessible in the report details
 export const ReportDownload = () => {
   const { report_id: policyId } = useParams();
-  const linkToReport = useLinkToBackground('/reports/' + policyId);
+  const navigate = useNavigate();
   const { data, loading, error } = useQuery(GET_PROFILE, {
     variables: { policyId },
   });
@@ -53,15 +53,15 @@ export const ReportDownload = () => {
       asyncFunction={exportPDF}
       buttonProps={buttonProps}
       fallback={<FallbackButton />}
-      className="pf-u-mr-sm"
+      className="pf-v5-u-mr-sm"
+      onSuccess={() => navigate(-1)}
     />,
     <Button
       variant="secondary"
       key="cancel"
       ouiaId="ExportReportCancelButton"
-      onClick={(event) => {
-        event.preventDefault();
-        window.history.back();
+      onClick={() => {
+        navigate(-1);
       }}
     >
       Cancel
@@ -74,7 +74,7 @@ export const ReportDownload = () => {
       width="440px"
       ouiaId="DownloadReportModal"
       title="Compliance report"
-      onClose={() => linkToReport()}
+      onClose={() => navigate(-1)}
       actions={actions}
     >
       <StateViewWithError stateValues={{ error, data, loading }}>

@@ -1,17 +1,15 @@
-import { useEffect, useLayoutEffect, useState } from 'react';
-import { useApolloClient, useQuery } from '@apollo/client';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
+import { useQuery } from '@apollo/client';
 import { useDispatch } from 'react-redux';
+import { Spinner } from '@patternfly/react-core';
 import debounce from '@redhat-cloud-services/frontend-components-utilities/debounce';
-import { systemsWithRuleObjectsFailed } from 'Utilities/ruleHelpers';
-import {
-  osMinorVersionFilter,
-  GET_MINIMAL_SYSTEMS,
-  GET_SYSTEMS_TAGS,
-  GET_SYSTEMS_OSES,
-} from './constants';
+import { osMinorVersionFilter, GET_SYSTEMS_OSES } from './constants';
 import useExport from 'Utilities/hooks/useTableTools/useExport';
 import { useBulkSelect } from 'Utilities/hooks/useTableTools/useBulkSelect';
 import { dispatchNotification } from 'Utilities/Dispatcher';
+import usePromiseQueue from 'Utilities/hooks/usePromiseQueue';
+import { setDisabledSelection } from '../../store/Actions/SystemActions';
+import useFetchSystems from './hooks/useFetchSystems';
 
 const groupByMajorVersion = (versions = [], showFilter = []) => {
   const showVersion = (version) => {
@@ -62,80 +60,27 @@ export const useSystemsFilter = (
   return filter;
 };
 
-const renameInventoryAttributes = ({
-  culledTimestamp,
-  staleWarningTimestamp,
-  staleTimestamp,
-  insightsId,
-  lastScanned,
-  ...system
-}) => ({
-  ...system,
-  updated: lastScanned,
-  culled_timestamp: culledTimestamp,
-  stale_warning_timestamp: staleWarningTimestamp,
-  stale_timestamp: staleTimestamp,
-  insights_id: insightsId,
-});
+const useFetchBatched = () => {
+  const { isResolving: isLoading, resolve } = usePromiseQueue();
 
-export const useFetchSystems = ({
-  query,
-  onComplete,
-  variables = {},
-  onError,
-}) => {
-  const client = useApolloClient();
+  return {
+    isLoading,
+    fetchBatched: (fetchFunction, total, filter, batchSize = 50) => {
+      const pages = Math.ceil(total / batchSize) || 1;
 
-  return (perPage, page, requestVariables = {}) =>
-    client
-      .query({
-        query,
-        fetchResults: true,
-        fetchPolicy: 'no-cache',
-        variables: {
-          perPage,
-          page,
-          ...variables,
-          ...requestVariables,
-        },
-      })
-      .then(({ data }) => {
-        const systems = data?.systems?.edges?.map((e) => e.node) || [];
-        const entities = systemsWithRuleObjectsFailed(systems).map(
-          renameInventoryAttributes
-        );
-        const result = {
-          entities,
-          meta: {
-            ...(requestVariables.tags && { tags: requestVariables.tags }),
-            totalCount: data?.systems?.totalCount || 0,
-          },
-        };
+      const results = resolve(
+        [...new Array(pages)].map(
+          (_, pageIdx) => () => fetchFunction(batchSize, pageIdx + 1, filter)
+        )
+      );
 
-        onComplete && onComplete(result);
-        return result;
-      })
-      .catch((error) => {
-        if (onError) {
-          onError(error);
-          return { entities: [], meta: { totalCount: 0 } };
-        } else {
-          throw error;
-        }
-      });
-};
-
-const fetchBatched = (fetchFunction, total, filter, batchSize = 100) => {
-  const pages = Math.ceil(total / batchSize) || 1;
-  return Promise.all(
-    [...new Array(pages)].map((_, pageIdx) =>
-      fetchFunction(batchSize, pageIdx + 1, filter)
-    )
-  );
+      return results;
+    },
+  };
 };
 
 const buildApiFilters = (filters = {}) => {
-  const { tagFilters, ...otherFilters } = filters;
+  const { tagFilters, hostGroupFilter, ...otherFilters } = filters;
   const tagsApiFilter = tagFilters
     ? {
         tags: tagFilters.flatMap((tagFilter) =>
@@ -149,6 +94,17 @@ const buildApiFilters = (filters = {}) => {
       }
     : {};
 
+  /**
+   * TODO: build a separate layer/hook that integrates inventory filters with gq filter
+   */
+
+  // filtering by group_name is enabled in gq filter
+  if (hostGroupFilter !== undefined && Array.isArray(hostGroupFilter)) {
+    otherFilters.filter = `(${hostGroupFilter
+      .map((value) => `group_name = "${value}"`)
+      .join(' or ')})`;
+  }
+
   return {
     ...otherFilters,
     ...tagsApiFilter,
@@ -159,8 +115,12 @@ export const useGetEntities = (fetchEntities, { selected, columns } = {}) => {
   const appendDirection = (attributes, direction) =>
     attributes.map((attribute) => `${attribute}:${direction}`);
 
-  const findColumnByKey = (key) =>
-    (columns || []).find((column) => column.key === key);
+  const findColumnByKey = (sortKey) =>
+    (columns || []).find(
+      (column) =>
+        column.key === sortKey || // group column has a sort key different to its main key
+        (column.key === 'groups' && sortKey === 'group_name')
+    );
 
   return async (
     _ids,
@@ -247,6 +207,7 @@ export const useSystemsExport = ({
   total,
   fetchArguments,
 }) => {
+  const { isLoading, fetchBatched } = useFetchBatched();
   const selectionFilter = selected ? toIdFilter(selected) : undefined;
   const fetchSystems = useFetchSystems({
     query: fetchArguments.query,
@@ -284,7 +245,7 @@ export const useSystemsExport = ({
   } = useExport({
     exporter,
     columns,
-    isDisabled: total === 0,
+    isDisabled: total === 0 || isLoading,
     onStart: () => {
       dispatchNotification({
         variant: 'info',
@@ -309,13 +270,13 @@ export const useSystemBulkSelect = ({
   preselected,
   fetchArguments,
   currentPageIds,
-  systemsCache = [],
 }) => {
+  const dispatch = useDispatch();
+  const { isLoading, fetchBatched } = useFetchBatched();
   // This is meant as a compatibility layer and to be removed
   const [selectedSystems, setSelectedSystems] = useState([]);
   const fetchSystems = useFetchSystems({
     ...fetchArguments,
-    query: GET_MINIMAL_SYSTEMS,
     onError: (error) => {
       dispatchNotification({
         variant: 'danger',
@@ -332,26 +293,19 @@ export const useSystemBulkSelect = ({
 
     const idFilter = toIdFilter(fetchIds);
     const results = await fetchBatched(fetchSystems, fetchIds.length, {
-      ...(idFilter && { filter: idFilter }),
+      ...(idFilter && { exclusiveFilter: idFilter }),
     });
 
     return results.flatMap((result) => result.entities);
   };
 
-  const cachedOrFetch = async (selectedIds) => {
-    const cachedSystems = systemsCache.filter(({ id }) =>
-      selectedIds.includes(id)
-    );
-    const cachedIds = cachedSystems.map(({ id }) => id);
-    const fetchIds = selectedIds.filter((id) => !cachedIds.includes(id));
-    const fetchedSystems = await fetchFunc(fetchIds);
-
-    return [...cachedSystems, ...fetchedSystems];
-  };
-
   const onSelectCallback = async (selectedIds) => {
-    const systems = await cachedOrFetch(selectedIds);
+    dispatch(setDisabledSelection(true));
+
+    const systems = await fetchFunc(selectedIds);
     setSelectedSystems(systems);
+
+    dispatch(setDisabledSelection(false));
     onSelect && onSelect(systems);
   };
 
@@ -367,88 +321,23 @@ export const useSystemBulkSelect = ({
     itemIdsInTable,
     itemIdsOnPage: () => currentPageIds,
   });
+
   return {
     selectedSystems,
     ...bulkSelect,
-  };
-};
-
-const searchTagsByKey = (search, tags) =>
-  tags.filter((tagItem) => {
-    if (search || search === '') {
-      return tagItem?.key.indexOf(search) !== -1;
-    } else {
-      return true;
-    }
-  });
-
-const useFetchTag = () => {
-  const apiClient = useApolloClient();
-
-  return async (page, per_page, search, fetchArguments) => {
-    const fetchedTags = await apiClient
-      .query({
-        query: GET_SYSTEMS_TAGS,
-        ...fetchArguments,
-      })
-      .then(
-        ({
-          data: {
-            systems: { tags },
-          },
-        }) =>
-          searchTagsByKey(search, tags).map((tag) => ({
-            tag,
-          }))
-      );
-
-    const start = per_page * page - per_page;
-    const end = start + per_page;
-
-    return {
-      total: fetchedTags.length,
-      results: fetchedTags.slice(start, end),
-    };
-  };
-};
-
-export const useTags = (fetchArguments) => {
-  const [currentTags, setCurrentTags] = useState();
-  const fetchTags = useFetchTag();
-
-  const getTags = async (search, config) => {
-    const { page, perPage: per_page } = config.pagination || {
-      perPage: 10,
-      page: 1,
-    };
-    const { total, results: tagsList } = await fetchTags(
-      page,
-      per_page,
-      search,
-      fetchArguments
-    );
-
-    return {
-      page,
-      per_page,
-      total,
-      results: tagsList,
-    };
-  };
-
-  return {
-    props: {
-      hideFilters: {
-        name: true,
-        tags: false,
-        registeredWith: true,
-        operatingSystem: true,
-        stale: true,
+    toolbarProps: {
+      ...bulkSelect.toolbarProps,
+      bulkSelect: {
+        ...bulkSelect.toolbarProps.bulkSelect,
+        ...(isLoading
+          ? {
+              isDisabled: true,
+              toggleProps: {
+                children: [<Spinner size="md" key="spinner" />],
+              },
+            }
+          : {}),
       },
-      showTags: true,
     },
-    currentTags,
-    setCurrentTags,
-    getTags,
   };
 };

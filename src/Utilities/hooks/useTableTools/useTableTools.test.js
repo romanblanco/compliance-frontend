@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 import useTableTools from './useTableTools';
 import items from './__fixtures__/items';
 import columns from './__fixtures__/columns';
@@ -34,6 +34,26 @@ describe('useTableTools', () => {
       })
     );
     expect(result.current.tableProps.rows.length).toBe(exampleItems.length);
+  });
+
+  it('returns all items as rows with pagination disabled', () => {
+    const { result } = renderHook(() =>
+      useTableTools(...defaultArguments, {
+        pagination: true,
+      })
+    );
+    expect(result.current.tableProps.rows.length).toBe(10);
+    expect(result.current.toolbarProps.pagination).not.toBeUndefined();
+  });
+
+  it('returns all items as rows with pagination disabled', () => {
+    const { result } = renderHook(() =>
+      useTableTools(...defaultArguments, {
+        pagination: true,
+        tableTree: [],
+      })
+    );
+    expect(result.current.toolbarProps.pagination).toBeUndefined();
   });
 
   it('returns toolbarProps and tableProps for bulk select when onSelect is passed', () => {

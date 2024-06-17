@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { sortable } from '@patternfly/react-table';
 import { orderArrayByProp, orderByArray, uniq } from 'Utilities/helpers';
 
@@ -15,36 +15,50 @@ const addSortableTransform = (columns) =>
   }));
 
 const columnOffset = (options = {}) =>
-  (typeof options.onSelect === 'function') +
+  (typeof options.onSelect === 'function' || options.hasRadioSelect ? 1 : 0) +
   (typeof options.detailsComponent !== 'undefined');
 
+const sortByFromOptions = (options = {}) => ({
+  index:
+    options.tableType === 'tree'
+      ? options.sortBy?.index - 1
+      : options.sortBy?.index || 1,
+  direction: options.sortBy?.direction || 'asc',
+});
+
 const useTableSort = (columns, options = {}) => {
-  const [sortBy, setSortBy] = useState(
-    options.sortBy || {
-      index: 0,
-      direction: 'asc',
-    }
-  );
-  const onSort = (_, index, direction) =>
+  const [sortBy, setSortBy] = useState(sortByFromOptions(options));
+  const onSort = (_, index, direction) => {
     setSortBy({
       index,
       direction,
     });
-  const currentSortableColumn = columns[sortBy.index - columnOffset(options)];
-  const sorter = (items) =>
-    currentSortableColumn?.sortByArray
-      ? orderByArray(
-          items,
-          currentSortableColumn?.sortByProp,
-          currentSortableColumn?.sortByArray,
-          sortBy.direction
-        )
-      : orderArrayByProp(
-          currentSortableColumn?.sortByProp ||
-            currentSortableColumn?.sortByFunction,
-          items,
-          sortBy.direction
-        );
+  };
+
+  const sorter = useCallback(
+    (items) => {
+      const currentSortableColumn =
+        columns[
+          sortBy.index -
+            (options.tableType === 'tree' ? 0 : columnOffset(options)) -
+            1
+        ];
+      return currentSortableColumn?.sortByArray
+        ? orderByArray(
+            items,
+            currentSortableColumn?.sortByProp,
+            currentSortableColumn?.sortByArray,
+            sortBy.direction
+          )
+        : orderArrayByProp(
+            currentSortableColumn?.sortByProp ||
+              currentSortableColumn?.sortByFunction,
+            items,
+            sortBy.direction
+          );
+    },
+    [sortBy, columns, options.tableType]
+  );
 
   return {
     sorter,

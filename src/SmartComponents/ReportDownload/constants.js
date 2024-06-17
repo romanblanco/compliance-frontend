@@ -1,4 +1,4 @@
-import gql from 'graphql-tag';
+import { gql } from '@apollo/client';
 
 export const DEFAULT_EXPORT_SETTINGS = {
   compliantSystems: false,
@@ -10,7 +10,7 @@ export const DEFAULT_EXPORT_SETTINGS = {
 };
 
 export const GET_SYSTEMS = gql`
-  query getSystems(
+  query PDF_Systems(
     $filter: String!
     $policyId: ID
     $perPage: Int
@@ -32,34 +32,16 @@ export const GET_SYSTEMS = gql`
           name
           osMajorVersion
           osMinorVersion
+          insightsId
           testResultProfiles(policyId: $policyId) {
-            id
-            name
-            refId
             lastScanned
             compliant
-            external
             score
             supported
-            ssgVersion
-            majorOsVersion
-            rules {
-              refId
-              title
-              compliant
-              remediationAvailable
-              severity
-              identifier
+            benchmark {
+              version
             }
-          }
-          policies(policyId: $policyId) {
-            id
-            name
-          }
-          tags {
-            namespace
-            key
-            value
+            rulesFailed
           }
         }
       }
@@ -68,7 +50,7 @@ export const GET_SYSTEMS = gql`
 `;
 
 export const GET_PROFILE = gql`
-  query Profile($policyId: String!) {
+  query PDF_Profile($policyId: String!) {
     profile(id: $policyId) {
       id
       name
@@ -77,22 +59,40 @@ export const GET_PROFILE = gql`
       compliantHostCount
       unsupportedHostCount
       complianceThreshold
-      majorOsVersion
+      osMajorVersion
       lastScanned
       policyType
       totalHostCount
-      ssgVersion
       policy {
         id
         name
       }
       benchmark {
         id
-        version
       }
       businessObjective {
         id
         title
+      }
+    }
+  }
+`;
+
+export const GET_RULES = gql`
+  query PDF_Profiles($filter: String!, $policyId: ID!) {
+    profiles(search: $filter) {
+      totalCount
+      edges {
+        node {
+          topFailedRules(policyId: $policyId) {
+            refId
+            title
+            remediationAvailable
+            severity
+            identifier
+            failedCount
+          }
+        }
       }
     }
   }

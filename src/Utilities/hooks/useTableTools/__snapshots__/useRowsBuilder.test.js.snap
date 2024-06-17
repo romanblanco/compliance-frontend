@@ -1,25 +1,14 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`useRowsBuilder returns a rows configuration 1`] = `
-Object {
-  "all": Array [
-    Object {
-      "tableProps": Object {
-        "rows": Array [],
-      },
-      "toolbarProps": Object {
-        "pagination": undefined,
-      },
+{
+  "current": {
+    "tableProps": {
+      "rows": [],
     },
-  ],
-  "current": Object {
-    "tableProps": Object {
-      "rows": Array [],
-    },
-    "toolbarProps": Object {
+    "toolbarProps": {
       "pagination": undefined,
     },
   },
-  "error": undefined,
 }
 `;

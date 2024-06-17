@@ -1,7 +1,11 @@
 import React from 'react';
 import propTypes from 'prop-types';
 import { Pagination, PaginationVariant } from '@patternfly/react-core';
-import { Table, TableBody, TableHeader } from '@patternfly/react-table';
+import {
+  Table,
+  TableBody,
+  TableHeader,
+} from '@patternfly/react-table/deprecated';
 import PrimaryToolbar from '@redhat-cloud-services/frontend-components/PrimaryToolbar';
 import TableToolbar from '@redhat-cloud-services/frontend-components/TableToolbar';
 import useTableTools from '../useTableTools';
@@ -14,31 +18,33 @@ const TableToolsTable = ({
   toolbarProps: toolbarPropsProp,
   ...tablePropsRest
 }) => {
-  const { toolbarProps, tableProps, ColumnManager } = useTableTools(
-    items,
-    columns,
-    {
+  const { toolbarProps, tableProps, ColumnManager, TreeTableToggle } =
+    useTableTools(items, columns, {
       filters,
       toolbarProps: toolbarPropsProp,
       tableProps: tablePropsRest,
       ...options,
-    }
-  );
+    });
 
   return (
     <React.Fragment>
-      <PrimaryToolbar {...toolbarProps} />
+      <PrimaryToolbar aria-label="Table toolbar" {...toolbarProps}>
+        {TreeTableToggle && <TreeTableToggle />}
+      </PrimaryToolbar>
 
       <Table {...tableProps}>
         <TableHeader />
         <TableBody />
       </Table>
 
-      <TableToolbar isFooter>
-        <Pagination
-          variant={PaginationVariant.bottom}
-          {...toolbarProps.pagination}
-        />
+      {/* The -1 are to combat a bug currently in the TableToolbar component */}
+      <TableToolbar isFooter results={-1} selected={-1}>
+        {toolbarProps.pagination && (
+          <Pagination
+            variant={PaginationVariant.bottom}
+            {...toolbarProps.pagination}
+          />
+        )}
       </TableToolbar>
 
       {ColumnManager && <ColumnManager />}

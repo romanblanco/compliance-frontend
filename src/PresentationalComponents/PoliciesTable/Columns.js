@@ -1,8 +1,7 @@
 import React from 'react';
 import propTypes from 'prop-types';
 import { TextContent } from '@patternfly/react-core';
-import { fitContent } from '@patternfly/react-table';
-import { Link } from 'react-router-dom';
+import { LinkWithPermission as Link } from 'PresentationalComponents';
 import { GreySmallText, SystemsCountWarning } from 'PresentationalComponents';
 import { renderComponent } from 'Utilities/helpers';
 
@@ -22,11 +21,18 @@ PolicyNameCell.propTypes = {
 export const Name = {
   title: 'Name',
   props: {
-    width: 45,
+    width: 25,
   },
   sortByProp: 'name',
   renderExport: (policy) => policy.name,
   renderFunc: renderComponent(PolicyNameCell),
+};
+
+export const Description = {
+  title: 'Description',
+  sortByProp: 'description',
+  renderExport: (policy) => policy.description,
+  hiddenByDefault: true,
 };
 
 const PolicyType = {
@@ -34,24 +40,17 @@ const PolicyType = {
   renderExport: (policy) => policy.policyType,
 };
 
-const osString = (policy) => `RHEL ${policy.majorOsVersion}`;
+const osString = (policy) => `RHEL ${policy.osMajorVersion}`;
 
 export const OperatingSystem = {
   title: 'Operating system',
-  transforms: [fitContent],
-  props: {
-    width: 15,
-  },
-  sortByProp: 'majorOsVersion',
+  sortByProp: 'osMajorVersion',
   renderExport: osString,
   renderFunc: (_data, _id, policy) => osString(policy),
 };
 
 export const Systems = {
   title: 'Systems',
-  props: {
-    width: 15,
-  },
   sortByProp: 'totalHostCount',
   renderExport: (policy) => policy.totalHostCount,
   // eslint-disable-next-line react/display-name
@@ -89,6 +88,7 @@ export const exportableColumns = [
   Systems,
   BusinessObjective,
   ComplianceThreshold,
+  Description,
 ];
 
 export default [
@@ -97,4 +97,5 @@ export default [
   Systems,
   BusinessObjective,
   ComplianceThreshold,
+  Description,
 ];

@@ -1,5 +1,5 @@
-export const validateBenchmarkPage = (benchmark, osMajorVersion, profile) => {
-  if (benchmark && osMajorVersion && profile) {
+export const validateSecurityGuidePage = (osMajorVersion, profile) => {
+  if (osMajorVersion && profile) {
     return true;
   } else {
     return false;
@@ -8,7 +8,7 @@ export const validateBenchmarkPage = (benchmark, osMajorVersion, profile) => {
 
 export const hasMaxDecimals = (num, dec) =>
   new RegExp(`^[-]?\\d+(\\.\\d{1${dec > 1 ? ',' + dec : ''}})?$`, 'g').test(
-    num.toString()
+    num.toString(),
   );
 
 export const thresholdValid = (threshold) => {
@@ -20,21 +20,22 @@ export const thresholdValid = (threshold) => {
   );
 };
 
-export const validateDetailsPage = (name, refId, complianceThreshold) =>
-  !name ||
-  !refId ||
-  !complianceThreshold ||
-  !thresholdValid(complianceThreshold)
-    ? false
-    : true;
+export const validateDetailsPage = (
+  name,
+  refId,
+  complianceThreshold,
+  formHasAsyncErrors,
+  detailsStepLoaded,
+) => {
+  return (
+    detailsStepLoaded &&
+    !formHasAsyncErrors &&
+    !!name &&
+    !!refId &&
+    !!complianceThreshold &&
+    thresholdValid(complianceThreshold)
+  );
+};
 
 export const validateRulesPage = (selectedRuleRefIds) =>
   selectedRuleRefIds?.length > 0;
-
-export const validateSystemsPage = (systemIds) => {
-  if (systemIds) {
-    return systemIds.length > 0;
-  } else {
-    return false;
-  }
-};

@@ -1,25 +1,22 @@
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import TestWrapper from '@/Utilities/TestWrapper';
+
 import PolicySystemsTab from './PolicySystemsTab';
 import { policies } from '@/__fixtures__/policies';
-import useFeature from 'Utilities/hooks/useFeature';
-jest.mock('Utilities/hooks/useFeature');
 
 describe('PolicySystemsTab', () => {
-  it('expect to render without error', () => {
-    useFeature.mockImplementation(() => true);
-    const policy = policies.edges[0].node;
-    const wrapper = shallow(<PolicySystemsTab {...{ policy }} />);
-
-    expect(toJson(wrapper)).toMatchSnapshot();
-  });
-
-  it('expect to render with no systems table', () => {
+  it('expect to render with systems table', () => {
     const policy = {
       ...policies.edges[0].node,
       hosts: [],
     };
+    render(
+      <TestWrapper>
+        <PolicySystemsTab {...{ policy }} />
+      </TestWrapper>,
+    );
 
-    const wrapper = shallow(<PolicySystemsTab {...{ policy }} />);
-
-    expect(toJson(wrapper)).toMatchSnapshot();
+    expect(screen.getByLabelText('Inventory Table')).toBeInTheDocument();
   });
 });

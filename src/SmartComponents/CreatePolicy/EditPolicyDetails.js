@@ -5,15 +5,15 @@ import {
   reduxForm,
   formValueSelector,
   propTypes as reduxFormPropTypes,
+  stopAsyncValidation,
 } from 'redux-form';
 import { connect } from 'react-redux';
 import propTypes from 'prop-types';
 import {
   Form,
   FormGroup,
-  Text,
-  TextContent,
-  TextVariants,
+  Content,
+  ContentVariants,
 } from '@patternfly/react-core';
 import {
   ReduxFormTextInput,
@@ -23,21 +23,52 @@ import {
   ProfileThresholdField,
   PolicyBusinessObjectiveTooltip,
 } from 'PresentationalComponents';
+import usePolicies from 'Utilities/hooks/api/usePolicies';
 
-export const EditPolicyDetails = ({ change, policy, refId }) => {
+export const EditPolicyDetails = ({
+  change,
+  profile,
+  refId,
+  name,
+  dispatch,
+}) => {
+  const { data: totalPolicies, loading } = usePolicies({
+    params: {
+      filter: `os_major_version=${profile.os_major_version} AND title~"${name}"`,
+    },
+    onlyTotal: true,
+    skip: !name,
+  });
+
   useEffect(() => {
-    if (policy && policy.refId !== refId) {
-      change('name', `${policy.name}`);
-      change('refId', `${policy.refId}`);
-      change('description', `${policy.description}`);
+    if (loading) {
+      change('detailsStepLoaded', false);
+      return;
     }
-  }, [policy]);
+    if (totalPolicies !== undefined) {
+      if (profile && profile.ref_id !== refId) {
+        change('name', `${profile.title}`);
+        change('refId', `${profile.ref_id}`);
+        change('description', `${profile.description}`);
+      }
+      if (totalPolicies > 0) {
+        dispatch(
+          stopAsyncValidation('policyForm', {
+            name: 'A policy with this name already exists',
+          }),
+        );
+      } else {
+        dispatch(stopAsyncValidation('policyForm', null));
+      }
+      change('detailsStepLoaded', true);
+    }
+  }, [totalPolicies, loading, profile, refId, change, dispatch]);
 
   return (
     <React.Fragment>
-      <TextContent>
-        <Text component={TextVariants.h1}>Details</Text>
-      </TextContent>
+      <Content>
+        <Content component={ContentVariants.h1}>Details</Content>
+      </Content>
       <br />
       <Form id="editpolicydetails">
         <FormGroup label="Policy name" isRequired fieldId="name">
@@ -71,7 +102,7 @@ export const EditPolicyDetails = ({ change, policy, refId }) => {
         </FormGroup>
         <FormGroup
           label="Business objective"
-          labelIcon={<PolicyBusinessObjectiveTooltip />}
+          labelHelp={<PolicyBusinessObjectiveTooltip />}
           fieldId="businessObjective"
         >
           <Field
@@ -80,10 +111,10 @@ export const EditPolicyDetails = ({ change, policy, refId }) => {
             id="businessObjective"
             name="businessObjective"
             aria-describedby="businessObjective"
-            defaultValue={policy.businessObjective}
+            defaultValue={profile.business_objective}
           />
         </FormGroup>
-        <ProfileThresholdField previousThreshold={policy.complianceThreshold} />
+        <ProfileThresholdField previousThreshold={100} />
       </Form>
     </React.Fragment>
   );
@@ -92,20 +123,25 @@ export const EditPolicyDetails = ({ change, policy, refId }) => {
 const selector = formValueSelector('policyForm');
 
 EditPolicyDetails.propTypes = {
-  policy: propTypes.object,
+  profile: propTypes.object,
   refId: propTypes.string,
+  name: propTypes.string,
   change: reduxFormPropTypes.change,
+  dispatch: reduxFormPropTypes.dispatch,
+  detailsStepLoaded: propTypes.bool,
 };
 
 const mapStateToProps = (state) => {
-  const policy = JSON.parse(selector(state, 'profile'));
+  const profile = selector(state, 'profile');
   return {
-    policy,
+    profile,
     refId: selector(state, 'refId'),
+    name: selector(state, 'name'),
+    detailsStepLoaded: selector(state, 'detailsStepLoaded'),
     initialValues: {
-      name: `${policy.name}`,
-      refId: `${policy.refId}`,
-      description: `${policy.description}`,
+      name: `${profile.title}`,
+      refId: `${profile.ref_id}`,
+      description: `${profile.description}`,
       benchmark: selector(state, 'benchmark'),
       osMajorVersion: selector(state, 'osMajorVersion'),
       profile: selector(state, 'profile'),
@@ -119,5 +155,5 @@ export default compose(
     form: 'policyForm',
     destroyOnUnmount: false,
     forceUnregisterOnUnmount: true,
-  })
+  }),
 )(EditPolicyDetails);

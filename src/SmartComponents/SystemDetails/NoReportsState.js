@@ -1,46 +1,32 @@
 import React from 'react';
 import propTypes from 'prop-types';
 import { CloudSecurityIcon } from '@patternfly/react-icons';
-import {
-  Title,
-  Bullseye,
-  EmptyState,
-  EmptyStateBody,
-  EmptyStateIcon,
-} from '@patternfly/react-core';
+import { Bullseye, EmptyState, EmptyStateBody } from '@patternfly/react-core';
+import { pluralize } from '@patternfly/react-core';
 
-const NoReportsState = ({ system }) => (
-  <Bullseye>
-    <EmptyState>
-      <EmptyStateIcon
+const NoReportsState = ({ policiesCount }) => {
+  const bodyTextMain = `This system is part of ${pluralize(policiesCount, 'policy', 'policies')}, but has not returned any results.`;
+  const bodyTextSub = `Reports are returned after scanning the system using the 'insights-client --compliance' command.`;
+  return (
+    <Bullseye>
+      <EmptyState
+        headingLevel="h1"
         icon={CloudSecurityIcon}
-        title="Compliance"
-        size="xl"
+        titleText="No results reported"
         style={{
-          fontWeight: '500',
-          color: 'var(--pf-global--primary-color--100)',
+          '--pf-v5-c-empty-state__icon--FontSize':
+            'var(--pf-v5-c-empty-state--m-xl__icon--FontSize)',
         }}
-      />
-      <Title headingLevel="h1" size="lg">
-        No results reported
-      </Title>
-      <EmptyStateBody>
-        This system is part of {system?.policies?.length}
-        {system?.policies?.length > 1 ? ' policies' : ' policy'}, but has not
-        returned any results.
-      </EmptyStateBody>
-      <EmptyStateBody>
-        Reports are returned when the system checks into Insights. By default,
-        systems check in every 24 hours.
-      </EmptyStateBody>
-    </EmptyState>
-  </Bullseye>
-);
+      >
+        <EmptyStateBody>{bodyTextMain}</EmptyStateBody>
+        <EmptyStateBody>{bodyTextSub}</EmptyStateBody>
+      </EmptyState>
+    </Bullseye>
+  );
+};
 
 NoReportsState.propTypes = {
-  system: propTypes.shape({
-    policies: propTypes.array,
-  }),
+  policiesCount: propTypes.number,
 };
 
 export default NoReportsState;

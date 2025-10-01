@@ -1,8 +1,7 @@
-import React from 'react';
-import { render } from 'enzyme';
-import toJson from 'enzyme-to-json';
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
+
 import SystemPolicyCard from './SystemPolicyCard';
-import { IntlProvider } from 'react-intl';
 
 describe('SystemPolicyCard component', () => {
   const currentTime = new Date();
@@ -17,19 +16,26 @@ describe('SystemPolicyCard component', () => {
     policyType: 'PCI-DSS v3 Control Baseline for Red Hat Enterprise Linux 7',
     compliant: false,
     supported: true,
-    ssgVersion: '0.1.45',
+    benchmark: { version: '0.1.45' },
     policy: {
       name: 'PCI-DSS Policy',
     },
   };
 
-  it('should render policy', () => {
-    const wrapper = render(
-      <IntlProvider locale={navigator.language}>
-        <SystemPolicyCard policy={policy} />
-      </IntlProvider>
-    );
-    expect(toJson(wrapper)).toMatchSnapshot();
+  it('should render non compliant policy', () => {
+    render(<SystemPolicyCard policy={policy} />);
+
+    expect(screen.getByText('Not compliant')).toBeInTheDocument();
+  });
+
+  it('should render compliant policy', () => {
+    const compliantPolicy = {
+      ...policy,
+      compliant: true,
+    };
+    render(<SystemPolicyCard policy={compliantPolicy} />);
+
+    expect(screen.getByText('Compliant')).toBeInTheDocument();
   });
 
   it('should render an unsupported policy', () => {
@@ -37,11 +43,10 @@ describe('SystemPolicyCard component', () => {
       ...policy,
       supported: false,
     };
-    const wrapper = render(
-      <IntlProvider locale={navigator.language}>
-        <SystemPolicyCard policy={unsupportedPolicy} />
-      </IntlProvider>
-    );
-    expect(toJson(wrapper)).toMatchSnapshot();
+    render(<SystemPolicyCard policy={unsupportedPolicy} />);
+
+    expect(
+      screen.getByText('Unsupported SSG version (0.1.45)'),
+    ).toBeInTheDocument();
   });
 });

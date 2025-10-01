@@ -1,94 +1,85 @@
 import React from 'react';
 import propTypes from 'prop-types';
-import { TextContent } from '@patternfly/react-core';
-import { fitContent } from '@patternfly/react-table';
-import { Link } from 'react-router-dom';
+import { Content } from '@patternfly/react-core';
+import { LinkWithPermission as Link } from 'PresentationalComponents';
 import { GreySmallText, SystemsCountWarning } from 'PresentationalComponents';
-import { renderComponent } from 'Utilities/helpers';
 
-const PolicyNameCell = ({ id, policy, policyType }) => (
-  <TextContent>
-    <Link to={'/scappolicies/' + id}>{policy.name}</Link>
-    <GreySmallText>{policyType}</GreySmallText>
-  </TextContent>
+const PolicyNameCell = ({ id, title, profile_title }) => (
+  <Content>
+    <Link to={'/scappolicies/' + id}>{title}</Link>
+    <GreySmallText>{profile_title}</GreySmallText>
+  </Content>
 );
 
 PolicyNameCell.propTypes = {
   id: propTypes.string,
-  policy: propTypes.object,
-  policyType: propTypes.string,
+  title: propTypes.string,
+  profile_title: propTypes.string,
 };
 
 export const Name = {
   title: 'Name',
   props: {
-    width: 45,
+    width: 25,
   },
-  sortByProp: 'name',
-  renderExport: (policy) => policy.name,
-  renderFunc: renderComponent(PolicyNameCell),
+  sortable: 'title',
+  renderExport: (policy) => policy.title,
+  Component: PolicyNameCell,
 };
 
-const PolicyType = {
-  title: 'Policy Type',
-  renderExport: (policy) => policy.policyType,
+export const Description = {
+  title: 'Description',
+  key: 'description',
+  exportKey: 'description',
+  hiddenByDefault: true,
+  isShown: false,
 };
-
-const osString = (policy) => `RHEL ${policy.majorOsVersion}`;
 
 export const OperatingSystem = {
   title: 'Operating system',
-  transforms: [fitContent],
-  props: {
-    width: 15,
-  },
-  sortByProp: 'majorOsVersion',
-  renderExport: osString,
-  renderFunc: (_data, _id, policy) => osString(policy),
+  sortable: 'os_major_version',
+  renderExport: ({ os_major_version }) => `RHEL ${os_major_version}`,
+  Component: ({ os_major_version }) => `RHEL ${os_major_version}`,
 };
 
 export const Systems = {
   title: 'Systems',
-  props: {
-    width: 15,
-  },
-  sortByProp: 'totalHostCount',
-  renderExport: (policy) => policy.totalHostCount,
-  // eslint-disable-next-line react/display-name
-  renderFunc: (_data, _id, policy) =>
-    policy.totalHostCount > 0 ? (
-      policy.totalHostCount
+  sortable: 'total_system_count',
+  renderExport: (policy) => policy.total_system_count,
+  // eslint-disable-next-line
+  Component: ({ total_system_count }) =>
+    total_system_count > 0 ? (
+      total_system_count
     ) : (
-      <SystemsCountWarning count={policy.totalHostCount} variant="count" />
+      <SystemsCountWarning count={total_system_count} variant="count" />
     ),
 };
 
-const businessObjectiveString = (policy) =>
-  (policy.businessObjective && policy.businessObjective.title) || '--';
+const businessObjectiveString = (policy) => policy.business_objective ?? '--';
 
 export const BusinessObjective = {
   title: 'Business objective',
-  sortByFunction: (policy) => policy?.businessObjective?.title,
+  sortable: 'business_objective',
   renderExport: businessObjectiveString,
-  renderFunc: (_data, _id, policy) => businessObjectiveString(policy),
+  Component: (policy) => businessObjectiveString(policy),
 };
 
-const complianceThresholdString = (policy) => `${policy.complianceThreshold}%`;
+const complianceThresholdString = (policy) => `${policy.compliance_threshold}%`;
 
 export const ComplianceThreshold = {
   title: 'Compliance threshold',
-  sortByProp: 'complianceThreshold',
+  sortable: 'compliance_threshold',
   renderExport: complianceThresholdString,
-  renderFunc: (_data, _id, policy) => complianceThresholdString(policy),
+  Component: (policy) => complianceThresholdString(policy),
 };
 
 export const exportableColumns = [
   Name,
-  PolicyType,
   OperatingSystem,
   Systems,
   BusinessObjective,
   ComplianceThreshold,
+  Description,
 ];
 
 export default [
@@ -97,4 +88,5 @@ export default [
   Systems,
   BusinessObjective,
   ComplianceThreshold,
+  Description,
 ];

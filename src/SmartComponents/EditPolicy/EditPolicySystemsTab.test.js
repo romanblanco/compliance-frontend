@@ -1,32 +1,31 @@
-import EditPolicySystemsTab from './EditPolicySystemsTab.js';
+import React from 'react';
+import { render } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import SystemsTable from 'SmartComponents/SystemsTable/SystemsTable';
 
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useHistory: () => ({
-    push: jest.fn(),
-    location: {},
-  }),
-}));
+jest.mock('SmartComponents/SystemsTable/SystemsTable');
+
+import EditPolicySystemsTab from './EditPolicySystemsTab';
 
 describe('EditPolicySystemsTab', () => {
   const defaultProps = {
-    policy: {
-      id: '12345abcde',
-      osMajorVersion: '7',
-      policyOsMinorVersions: [1, 2, 3],
-    },
-    newRuleTabs: false,
+    policy: { os_major_version: 8 },
+    onSystemSelect: jest.fn(),
+    selectedSystems: ['test-system-1', 'test-system-2'],
+    supportedOsVersions: [1, 2],
   };
+  const mockSystemsTable = jest.fn(() => <div>Mock Systems Table</div>);
 
-  it('expect to render without error', async () => {
-    const wrapper = shallow(<EditPolicySystemsTab {...defaultProps} />);
-    expect(toJson(wrapper)).toMatchSnapshot();
-  });
+  it('should render a SystemsTable with a default filter', () => {
+    SystemsTable.mockImplementation(mockSystemsTable);
+    render(<EditPolicySystemsTab {...defaultProps} />);
 
-  it('expect to render with new tabs alert', async () => {
-    const wrapper = shallow(
-      <EditPolicySystemsTab {...defaultProps} newRuleTabs={true} />
+    expect(mockSystemsTable).toHaveBeenCalledWith(
+      expect.objectContaining({
+        apiEndpoint: 'systems',
+        defaultFilter: 'os_major_version = 8 AND os_minor_version ^ (1 2)',
+      }),
+      {},
     );
-    expect(toJson(wrapper)).toMatchSnapshot();
   });
 });

@@ -1,73 +1,74 @@
-/* eslint-disable react/display-name */
 import React from 'react';
-import gql from 'graphql-tag';
-import { useQuery } from '@apollo/client';
-import PageHeader, {
-  PageHeaderTitle,
-} from '@redhat-cloud-services/frontend-components/PageHeader';
-import Main from '@redhat-cloud-services/frontend-components/Main';
+import { Alert } from '@patternfly/react-core';
+import useNavigate from '@redhat-cloud-services/frontend-components-utilities/useInsightsNavigate';
 import { StateViewPart, StateViewWithError } from 'PresentationalComponents';
 import { SystemsTable } from 'SmartComponents';
-import { GET_SYSTEMS } from '../SystemsTable/constants';
 import * as Columns from '../SystemsTable/Columns';
+import usePolicies from 'Utilities/hooks/api/usePolicies';
+import CompliancePageHeader from 'PresentationalComponents/CompliancePageHeader/CompliancePageHeader';
+import { systemsPopoverData } from '@/constants';
+import useFeatureFlag from 'Utilities/hooks/useFeatureFlag';
 
-const QUERY = gql`
-  {
-    profiles(search: "external = false and canonical = false") {
-      edges {
-        node {
-          id
-          name
-          refId
-          majorOsVersion
-        }
-      }
-    }
-  }
-`;
+const systemTableColumns = [
+  Columns.customName(
+    {
+      showLink: true,
+    },
+    { sortable: ['display_name'] },
+  ),
+  Columns.Workspaces,
+  Columns.Tags,
+  Columns.OS(),
+  Columns.Policies,
+  Columns.Updated,
+];
 
-const DEFAULT_FILTER = 'has_test_results = true or has_policy = true';
+const ComplianceSystems = () => {
+  const navigateToInventory = useNavigate('inventory');
+  const { data, error, loading } = usePolicies();
+  const policies = data?.data;
 
-export const ComplianceSystems = () => {
-  const { data, error, loading } = useQuery(QUERY);
-  const policies = data?.profiles?.edges.map(({ node }) => node);
+  const isLightspeedEnabled = useFeatureFlag('platform.lightspeed-rebrand');
+  const serviceName = isLightspeedEnabled ? 'Red Hat Lightspeed' : 'Insights';
 
   return (
     <React.Fragment>
-      <PageHeader className="page-header">
-        <PageHeaderTitle title="Compliance systems" />
-      </PageHeader>
-      <Main>
-        <StateViewWithError stateValues={{ error, data, loading }}>
+      <CompliancePageHeader
+        mainTitle={'Systems'}
+        popoverData={systemsPopoverData(serviceName)}
+      />
+      <section className="pf-v6-c-page__main-section">
+        <StateViewWithError stateValues={{ error, data: policies, loading }}>
           <StateViewPart stateKey="data">
-            {policies && (
-              <SystemsTable
-                columns={[
-                  Columns.customName({
-                    showLink: true,
-                  }),
-                  Columns.inventoryColumn('tags'),
-                  Columns.OS,
-                  Columns.Policies,
-                  Columns.inventoryColumn('updated', { isStatic: true }),
-                ]}
-                query={GET_SYSTEMS}
-                defaultFilter={DEFAULT_FILTER}
-                systemProps={{
-                  isFullView: true,
-                }}
-                showOsMinorVersionFilter={policies.map(
-                  (policy) => policy.majorOsVersion
-                )}
-                showComplianceSystemsInfo
-                enableEditPolicy={false}
-                remediationsEnabled={false}
-                policies={policies}
-              />
-            )}
+            <Alert
+              isInline
+              variant="info"
+              ouiaId="SystemsListIsDifferentAlert"
+              title={
+                'The list of systems in this view is different than those that appear in the Inventory. ' +
+                'Only systems currently associated with or reporting against compliance policies are displayed.'
+              }
+            />
+            <SystemsTable
+              isFullView
+              columns={systemTableColumns}
+              defaultFilter="assigned_or_scanned=true"
+              filters={{
+                policies,
+                groups: true,
+              }}
+              actions={[
+                {
+                  title: 'View in inventory',
+                  onClick: (_event, _index, { id }) =>
+                    navigateToInventory('/' + id),
+                },
+              ]}
+              onSelect={true}
+            />
           </StateViewPart>
         </StateViewWithError>
-      </Main>
+      </section>
     </React.Fragment>
   );
 };

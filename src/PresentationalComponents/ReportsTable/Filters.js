@@ -4,28 +4,7 @@ export const policyNameFilter = [
   {
     type: conditionalFilterType.text,
     label: 'Policy name',
-    filter: (profiles, value) => {
-      const lowerCaseValue = value.toLowerCase();
-      return profiles.filter((profile) =>
-        [profile.name, profile.policy.name]
-          .join()
-          .toLowerCase()
-          .includes(lowerCaseValue)
-      );
-    },
-  },
-];
-
-export const policyTypeFilter = (policyTypes) => [
-  {
-    type: conditionalFilterType.checkbox,
-    label: 'Policy type',
-    filter: (profiles, values) =>
-      profiles.filter(({ policyType }) => values.includes(policyType)),
-    items: policyTypes.map((policyType) => ({
-      label: policyType,
-      value: policyType,
-    })),
+    filterAttribute: 'title',
   },
 ];
 
@@ -33,11 +12,10 @@ export const operatingSystemFilter = (operatingSystems) => [
   {
     type: conditionalFilterType.checkbox,
     label: 'Operating system',
-    filter: (profiles, values) =>
-      profiles.filter(({ majorOsVersion }) => values.includes(majorOsVersion)),
+    filterAttribute: 'os_major_version',
     items: operatingSystems.map((operatingSystem) => ({
       label: `RHEL ${operatingSystem}`,
-      value: operatingSystem,
+      value: `${operatingSystem}`,
     })),
   },
 ];
@@ -46,19 +24,14 @@ export const policyComplianceFilter = [
   {
     type: conditionalFilterType.checkbox,
     label: 'Systems meeting compliance',
-    filter: (profiles, values) =>
-      profiles.filter(({ testResultHostCount, compliantHostCount }) => {
-        const compliantHostsPercent = Math.round(
-          (100 / testResultHostCount) * compliantHostCount
-        );
-        const matching = values
-          .map((value) => {
-            const [min, max] = value.split('-');
-            return compliantHostsPercent >= min && compliantHostsPercent <= max;
-          })
-          .filter((i) => !!i);
-        return matching.length > 0;
-      }),
+    filterAttribute: 'percent_compliant',
+    filterSerialiser: (_, values) =>
+      `(${values
+        .map((value) => {
+          const scoreRange = value.split('-');
+          return `(percent_compliant >= ${scoreRange[0]} AND percent_compliant <= ${scoreRange[1]})`;
+        })
+        .join(' OR ')})`,
     items: [
       { label: '90 - 100%', value: '90-100' },
       { label: '70 - 89%', value: '70-89' },

@@ -1,5 +1,4 @@
 import {
-  systemRulesPassed,
   systemRulesFailed,
   profilesRulesPassed,
   profilesRulesFailed,
@@ -20,18 +19,12 @@ describe('passed count', () => {
         },
       ],
     };
-    expect(systemRulesPassed(system).length).toEqual(3);
     expect(profilesRulesPassed([system.testResultProfiles[0]]).length).toEqual(
-      1
+      1,
     );
     expect(profilesRulesPassed([system.testResultProfiles[1]]).length).toEqual(
-      2
+      2,
     );
-  });
-
-  it('should set rules count even if profiles is an empty array', () => {
-    const system = { testResultProfiles: [] };
-    expect(systemRulesPassed(system).length).toEqual(0);
   });
 });
 
@@ -51,10 +44,10 @@ describe('fail count', () => {
     };
     expect(systemRulesFailed(system).length).toEqual(4);
     expect(profilesRulesFailed([system.testResultProfiles[0]]).length).toEqual(
-      2
+      2,
     );
     expect(profilesRulesFailed([system.testResultProfiles[1]]).length).toEqual(
-      2
+      2,
     );
   });
 

@@ -1,96 +1,105 @@
 import React, { useState } from 'react';
 import propTypes from 'prop-types';
-import { useParams } from 'react-router-dom';
-import gql from 'graphql-tag';
-import { useQuery } from '@apollo/client';
 import { Button, Spinner } from '@patternfly/react-core';
+import { useLocation, useParams } from 'react-router-dom';
+import useNavigate from '@redhat-cloud-services/frontend-components-utilities/useInsightsNavigate';
 import { useTitleEntity } from 'Utilities/hooks/useDocumentTitle';
 import {
   ComplianceModal,
   StateViewWithError,
   StateViewPart,
 } from 'PresentationalComponents';
+import usePolicy from 'Utilities/hooks/api/usePolicy';
+import useSupportedProfiles from 'Utilities/hooks/api/useSupportedProfiles';
+import usePolicySystems from 'Utilities/hooks/api/usePolicySystems';
+import useAssignedRules from './hooks/useAssignedRules';
 import EditPolicyForm from './EditPolicyForm';
-import { useOnSave, useLinkToPolicy } from './hooks';
+import { useOnSave } from './hooks';
 
-export const MULTIVERSION_QUERY = gql`
-  query Profile($policyId: String!) {
-    profile(id: $policyId) {
-      id
-      name
-      refId
-      external
-      description
-      totalHostCount
-      compliantHostCount
-      complianceThreshold
-      majorOsVersion
-      osMajorVersion
-      lastScanned
-      policyType
-      policy {
-        id
-        name
-        refId
-        profiles {
-          id
-          ssgVersion
-          parentProfileId
-          name
-          refId
-          osMinorVersion
-          osMajorVersion
-          benchmark {
-            id
-            title
-            latestSupportedOsMinorVersions
-            osMajorVersion
-          }
-          rules {
-            title
-            severity
-            rationale
-            refId
-            description
-            remediationAvailable
-            identifier
-          }
-        }
-      }
-      businessObjective {
-        id
-        title
-      }
-      hosts {
-        id
-        osMinorVersion
-        osMajorVersion
-      }
-    }
-  }
-`;
-
-export const EditPolicy = ({ route }) => {
+const EditPolicy = ({ route }) => {
+  const navigate = useNavigate();
   const { policy_id: policyId } = useParams();
-  const { data, loading, error } = useQuery(MULTIVERSION_QUERY, {
-    variables: { policyId },
-  });
-  const policy = data?.profile;
-  const linkToPolicy = useLinkToPolicy();
+  const location = useLocation();
   const [updatedPolicy, setUpdatedPolicy] = useState(null);
-  const [selectedRuleRefIds, setSelectedRuleRefIds] = useState([]);
-  const [selectedSystems, setSelectedSystems] = useState([]);
-  const saveEnabled = updatedPolicy && !updatedPolicy.complianceThresholdValid;
-  const updatedPolicyHostsAndRules = {
-    ...updatedPolicy,
-    selectedRuleRefIds,
-    hosts: selectedSystems,
-  };
-  const [isSaving, onSave] = useOnSave(policy, updatedPolicyHostsAndRules);
+  const {
+    data: { data: policy } = {},
+    loading: policyLoading,
+    error: policyError,
+  } = usePolicy({ params: { policyId }, skip: !policyId });
 
+  const {
+    data: { data: supportedProfiles } = {},
+    error: supportedProfilesError,
+    loading: supportedProfilesLoading,
+  } = useSupportedProfiles({
+    params: {
+      filter: `os_major_version=${policy?.os_major_version}`,
+    },
+    batched: true,
+    skip: !policy,
+  });
+
+  const securityGuide = supportedProfiles?.find(
+    (profile) => profile.ref_id === policy?.ref_id,
+  );
+
+  const supportedOsVersions = securityGuide?.os_minor_versions || [];
+
+  const { assignedRuleIds, assignedRulesLoading } = useAssignedRules(policyId);
+  const [systemsDataLoading, setIsSystemsDataLoading] = useState(false);
+  const {
+    data: { data: assignedSystems } = {},
+    loading: assignedSystemsLoading,
+  } = usePolicySystems({
+    params: { policyId },
+    batched: true,
+  });
+
+  const saveDisabled =
+    !updatedPolicy ||
+    !assignedSystems ||
+    !assignedRuleIds ||
+    !supportedProfiles ||
+    systemsDataLoading;
+
+  const onSaveCallback = (isClose) =>
+    navigate(
+      isClose ? `/scappolicies/${policyId}` : location.state?.returnTo || -1,
+    );
+
+  const [isSaving, onSave] = useOnSave(policy, updatedPolicy, {
+    onSave: onSaveCallback,
+    onError: onSaveCallback,
+  });
+
+  const setRuleValues = (
+    _policy,
+    tailoring,
+    valueDefinition,
+    newValue,
+    closeInlineEdit,
+  ) => {
+    // tailoring might be an object or just a number (minor version for profile tab)
+    const osMinorVersion = tailoring?.os_minor_version ?? tailoring;
+    setUpdatedPolicy((prev) => {
+      return {
+        ...prev,
+        tailoringValueOverrides: {
+          ...prev?.tailoringValueOverrides,
+          [osMinorVersion]: {
+            ...tailoring?.value_overrides,
+            ...prev?.tailoringValueOverrides?.[osMinorVersion],
+            [valueDefinition.id]: newValue,
+          },
+        },
+      };
+    });
+
+    closeInlineEdit();
+  };
   const actions = [
     <Button
-      isDisabled={saveEnabled}
+      isDisabled={saveDisabled}
       key="save"
       ouiaId="EditPolicySaveButton"
       variant="primary"
@@ -104,39 +113,52 @@ export const EditPolicy = ({ route }) => {
       key="cancel"
       ouiaId="EditPolicyCancelButton"
       variant="link"
-      onClick={() => linkToPolicy()}
+      onClick={() => onSaveCallback(true)}
     >
       Cancel
     </Button>,
   ];
 
-  useTitleEntity(route, policy?.name);
+  useTitleEntity(route, policy?.title);
+
+  const statusValues = {
+    data: policy && supportedProfiles && assignedRuleIds && assignedSystems,
+    loading:
+      policyLoading ||
+      supportedProfilesLoading ||
+      assignedSystemsLoading ||
+      assignedRulesLoading,
+    error: policyError || supportedProfilesError,
+  };
 
   return (
     <ComplianceModal
       isOpen
       position={'top'}
       style={{ minHeight: '350px' }}
+      width={1220}
       variant={'large'}
       ouiaId="EditPolicyModal"
-      title={`Edit ${policy ? policy.name : ''}`}
-      onClose={() => linkToPolicy()}
+      title={`Edit ${policy?.title || ''}`}
+      onClose={() => onSaveCallback(true)}
       actions={actions}
     >
-      <StateViewWithError stateValues={{ policy, loading, error }}>
+      <StateViewWithError stateValues={statusValues}>
         <StateViewPart stateKey="loading">
           <Spinner />
         </StateViewPart>
-        <StateViewPart stateKey="policy">
+        <StateViewPart stateKey="data">
           <EditPolicyForm
             {...{
               policy,
               updatedPolicy,
               setUpdatedPolicy,
-              selectedRuleRefIds,
-              setSelectedRuleRefIds,
-              selectedSystems,
-              setSelectedSystems,
+              assignedRuleIds,
+              assignedSystems,
+              setRuleValues,
+              supportedOsVersions,
+              securityGuide,
+              setIsSystemsDataLoading,
             }}
           />
         </StateViewPart>

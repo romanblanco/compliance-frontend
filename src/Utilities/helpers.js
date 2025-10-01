@@ -15,8 +15,9 @@ export const sortingByProp =
   };
 
 // eslint-disable-next-line react/display-name
-export const renderComponent = (Component, props) => (_data, _id, entity) =>
-  <Component {...entity} {...props} />;
+export const renderComponent = (Component, props) => (_data, _id, entity) => (
+  <Component {...entity} {...props} />
+);
 
 const getSortable = (property, item) => {
   if (typeof property === 'function') {
@@ -26,24 +27,24 @@ const getSortable = (property, item) => {
   }
 };
 
-export const stringToId = (string) => string.split(' ').join('').toLowerCase();
+export const stringToId = (string) => string.split(' ').join('-').toLowerCase();
 
 export const orderArrayByProp = (property, objects, direction) =>
   objects.sort((a, b) => {
     if (direction === 'asc') {
       return String(getSortable(property, a)).localeCompare(
-        String(getSortable(property, b))
+        String(getSortable(property, b)),
       );
     } else {
       return -String(getSortable(property, a)).localeCompare(
-        String(getSortable(property, b))
+        String(getSortable(property, b)),
       );
     }
   });
 
 export const orderByArray = (objectArray, orderProp, orderArray, direction) => {
   const sortedObjectArray = orderArray.flatMap((orderKey) =>
-    objectArray.filter((item) => item[orderProp] === orderKey)
+    objectArray.filter((item) => item[orderProp] === orderKey),
   );
   return direction !== 'asc' ? sortedObjectArray.reverse() : sortedObjectArray;
 };
@@ -66,3 +67,41 @@ export const camelCase = (string) =>
     .map((string) => string.trim())
     .map((string) => string[0].toUpperCase() + string.substring(1))
     .join('');
+
+export const logMultipleErrors = (...errors) => {
+  for (const error of errors) {
+    if (error) {
+      console.error(error);
+    }
+  }
+
+  return errors?.filter((v) => !!v).length > 0 || undefined;
+};
+
+export const buildOSObject = (osVersions = []) => {
+  return osVersions
+    .filter((version) => !!version && typeof version === 'string')
+    .map((version) => {
+      const [major, minor] = version.split('.');
+      return {
+        count: 0,
+        value: {
+          name: 'RHEL',
+          major,
+          minor,
+        },
+      };
+    });
+};
+export const calculateOffset = (page, perPage) => (page - 1) * perPage;
+
+export const capitalizeWord = (string) =>
+  string.charAt(0).toUpperCase() + string.slice(1);
+
+export const stringToSentenceCase = (string) => {
+  const lowercasedString = string.toLowerCase();
+  return lowercasedString.charAt(0).toUpperCase() + lowercasedString.slice(1);
+};
+
+export const isObject = (value) =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);

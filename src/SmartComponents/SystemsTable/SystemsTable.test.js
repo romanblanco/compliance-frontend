@@ -1,169 +1,68 @@
-import { render } from '@testing-library/react';
-import { Provider } from 'react-redux';
-import { init } from 'Store';
-import { SystemsTable } from './SystemsTable';
-import { InventoryTable } from '@redhat-cloud-services/frontend-components/Inventory';
-import {
-  DEFAULT_SYSTEMS_FILTER_CONFIGURATION,
-  COMPLIANT_SYSTEMS_FILTER_CONFIGURATION,
-} from '@/constants';
-import {
-  useGetEntities,
-  useOsMinorVersionFilter,
-  useFetchSystems,
-} from './hooks';
-import { filterHelpers } from 'Utilities/hooks/useTableTools/testHelpers';
-expect.extend(filterHelpers);
+import { render, waitFor } from '@testing-library/react';
+import SystemsTable from './SystemsTable';
+import TestWrapper from '@redhat-cloud-services/frontend-components-utilities/TestingUtils/JestUtils/TestWrapper';
 
-import { osMinorVersionFilter as mockOsMinorVersionFilter } from './__mocks__/osMinorVersionFilter';
-import InventoryTableMock from './__mocks__/InventoryTableMock';
-import useFetchSystemsMockBuilder from './__mocks__/useFetchSystemsMockBuilder';
-
-jest.mock('@apollo/client', () => ({
-  ...jest.requireActual('@apollo/client'),
-  useApolloClient: () => jest.fn(),
-}));
-
-jest.mock('react-redux', () => ({
-  ...jest.requireActual('react-redux'),
-  useDispatch: () => jest.fn(),
-}));
-
-jest.mock('./hooks', () => ({
-  ...jest.requireActual('./hooks'),
-  useGetEntities: jest.fn(),
-  useFetchSystems: jest.fn(),
-  useOsMinorVersionFilter: jest.fn(),
-}));
-useFetchSystems.mockImplementation(useFetchSystemsMockBuilder());
-useGetEntities.mockImplementation(
-  (fetchSystems) => async () => await fetchSystems()
-);
-useOsMinorVersionFilter.mockImplementation(() => mockOsMinorVersionFilter);
+import useComplianceQuery from 'Utilities/hooks/useComplianceQuery';
+jest.mock('Utilities/hooks/useComplianceQuery');
 
 jest.mock('@redhat-cloud-services/frontend-components/Inventory', () => ({
-  ...jest.requireActual('@redhat-cloud-services/frontend-components/Inventory'),
-  InventoryTable: jest.fn(),
+  InventoryTable: jest.fn(({ getEntities }) => {
+    getEntities(10, {
+      filters: {
+        hostnameOrId: 'test-name',
+        tagFilters: [],
+      },
+    });
+    return <div data-testid="inventory-mock-component">Inventory</div>;
+  }),
 }));
-InventoryTable.mockImplementation((props) => <InventoryTableMock {...props} />);
+
+const mockProps = {
+  columns: ['test-column'],
+  enableExport: true,
+  policies: [],
+  onSelect: jest.fn(),
+  ignoreOsMajorVersion: false,
+  defaultFilter: 'someFilter ~ test',
+};
+
+const mockUseQuery = jest.fn(() => {
+  return {
+    data: { data: [], meta: {} },
+    loading: false,
+    error: undefined,
+    fetch: () => ({ data: [], meta: {} }),
+  };
+});
 
 describe('SystemsTable', () => {
-  const store = init().getStore();
-
-  it('returns', () => {
-    expect(renderJson(<SystemsTable />)).toMatchSnapshot();
+  beforeEach(() => {
+    useComplianceQuery.mockImplementation(mockUseQuery);
   });
 
-  it('returns without actions', () => {
-    expect(renderJson(<SystemsTable showActions={false} />)).toMatchSnapshot();
-  });
-
-  it('returns without remediations', () => {
-    expect(
-      renderJson(<SystemsTable remediationsEnabled={false} />)
-    ).toMatchSnapshot();
-  });
-
-  it('returns showAllSystems', () => {
-    expect(renderJson(<SystemsTable showAllSystems />)).toMatchSnapshot();
-  });
-
-  it('returns with a showComplianceSystemsInfo', () => {
-    expect(
-      renderJson(<SystemsTable showComplianceSystemsInfo />)
-    ).toMatchSnapshot();
-  });
-
-  it('returns compact', () => {
-    expect(renderJson(<SystemsTable compact />)).toMatchSnapshot();
-  });
-
-  it('returns with compliantFilter', () => {
-    expect(renderJson(<SystemsTable compliantFilter />)).toMatchSnapshot();
-  });
-
-  it('returns with showOnlySystemsWithTestResults', () => {
-    expect(
-      renderJson(<SystemsTable showOnlySystemsWithTestResults />)
-    ).toMatchSnapshot();
-  });
-
-  it('expect to have filters properly rendered', () => {
-    const component = (
-      <Provider store={store}>
-        <SystemsTable
-          showOsMinorVersionFilter
-          compliantFilter
-          remediationsEnabled={false}
-        />
-      </Provider>
+  it('Should connect inventory with compliance filters so that full filters are passed to bulk selection', async () => {
+    render(
+      <TestWrapper>
+        <SystemsTable {...mockProps} />
+      </TestWrapper>,
     );
 
-    expect(component).toHaveFiltersFor([
-      ...DEFAULT_SYSTEMS_FILTER_CONFIGURATION,
-      ...COMPLIANT_SYSTEMS_FILTER_CONFIGURATION,
-      {
-        type: 'group',
-        label: 'Operating system',
-        items: [
-          {
-            label: 'RHEL 7',
-            value: 1,
-            items: [{ label: 'RHEL 7.9', value: 1 }],
-          },
-        ],
-      },
-    ]);
-  });
+    await waitFor(() =>
+      expect(useComplianceQuery).toHaveBeenCalledWith(
+        'systems',
+        expect.objectContaining({
+          params: { filter: 'someFilter ~ test' },
+        }),
+      ),
+    );
 
-  describe('via @testing-library/react', () => {
-    beforeEach(() => {
-      window.insights = {
-        chrome: {
-          getUserPermissions: () => Promise.resolve([]),
-        },
-        experimental: {
-          loadRemediations: () => Promise.resolve([]),
-        },
-      };
-    });
-
-    describe('emptyStateComponent', function () {
-      const emptyStateComponent = <div>Empty State</div>;
-      const component = (
-        <Provider store={store}>
-          <SystemsTable {...{ emptyStateComponent }} />
-        </Provider>
-      );
-
-      it('should show an emptystate when there are no results', () => {
-        useFetchSystems.mockImplementation(
-          useFetchSystemsMockBuilder({
-            entities: [],
-            meta: {
-              tags: [],
-              totalCount: 0,
-            },
-          })
-        );
-
-        const { container } = render(component);
-        expect(container).toMatchSnapshot();
-      });
-
-      it('should show NO emptystate when tags queries return no results', () => {
-        useFetchSystems.mockImplementation(
-          useFetchSystemsMockBuilder({
-            entities: [],
-            meta: {
-              tags: ['tag1'],
-              totalCount: 0,
-            },
-          })
-        );
-        const { container } = render(component);
-        expect(container).toMatchSnapshot();
-      });
-    });
+    await waitFor(() =>
+      expect(useComplianceQuery).toHaveBeenCalledWith(
+        'systemsOS',
+        expect.objectContaining({
+          params: { filter: 'someFilter ~ test' },
+        }),
+      ),
+    );
   });
 });

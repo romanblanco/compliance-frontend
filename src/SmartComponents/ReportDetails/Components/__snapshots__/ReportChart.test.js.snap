@@ -1,51 +1,52 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
-exports[`ReportChart expect to render with not reporting hosts 1`] = `
+exports[`ReportChart expect to render with 0 unsupported & 0 never reported hosts 1`] = `
 <div>
   <div
-    class="pf-l-grid chart-container"
+    aria-label="Report chart"
+    class="pf-v6-l-grid"
   >
     <div
-      class="pf-l-grid__item pf-m-6-col"
+      class="pf-v6-l-grid__item pf-m-6-col"
     >
       <div
-        class="pf-c-chart"
-        style="pointer-events: none; position: relative; width: 100%; height: 100%;"
+        class="pf-v6-c-chart"
+        style="pointer-events: none; position: relative;"
       >
         <svg
           height="230"
           role="img"
-          style="pointer-events: all; width: 100%; height: 100%;"
+          style="width: 100%; height: 100%; pointer-events: all;"
           viewBox="0 0 230 230"
           width="230"
         >
           <g>
             <path
-              d="M5.8170722959499274e-15,-95L5.3884459162483544e-15,-88Z"
+              d="M1.130044229770525,-94.99327870980537A95,95,0,1,1,-90.69317959259652,-28.279801544300735L-84.0352754576017,-26.116517355210387A88,88,0,1,0,1.1300442297705258,-87.99274401925855Z"
               role="presentation"
               shape-rendering="auto"
-              style="fill: #d2d2d2; padding: 8px; stroke: transparent; stroke-width: 1;"
+              style="fill: #0066cc; padding: 8px; stroke: var(--pf-v6-chart-pie--data--stroke--Color, transparent); stroke-width: 1;"
               transform="translate(115, 115)"
             />
             <path
-              d="M5.8170722959499274e-15,-95L5.3884459162483544e-15,-88Z"
+              d="M-89.99477384980764,-30.429273401150716A95,95,0,0,1,-1.1300442297705369,-94.99327870980537L-1.1300442297705169,-87.99274401925855A88,88,0,0,0,-83.3368697148128,-28.265989212060408Z"
               role="presentation"
               shape-rendering="auto"
-              style="fill: #d2d2d2; padding: 8px; stroke: transparent; stroke-width: 1;"
+              style="fill: #92c5f9; padding: 8px; stroke: var(--pf-v6-chart-pie--data--stroke--Color, transparent); stroke-width: 1;"
               transform="translate(115, 115)"
             />
             <path
-              d="M5.8170722959499274e-15,-95L5.3884459162483544e-15,-88Z"
+              d="M-1.745121688784978e-14,-95L-1.6165337748745062e-14,-88Z"
               role="presentation"
               shape-rendering="auto"
-              style="fill: #d2d2d2; padding: 8px; stroke: transparent; stroke-width: 1;"
+              style="fill: #dca614; padding: 8px; stroke: var(--pf-v6-chart-pie--data--stroke--Color, transparent); stroke-width: 1;"
               transform="translate(115, 115)"
             />
             <path
-              d="M5.8170722959499274e-15,-95L5.3884459162483544e-15,-88Z"
+              d="M-1.745121688784978e-14,-95L-1.6165337748745062e-14,-88Z"
               role="presentation"
               shape-rendering="auto"
-              style="fill: #d2d2d2; padding: 8px; stroke: transparent; stroke-width: 1;"
+              style="fill: #e0e0e0; padding: 8px; stroke: var(--pf-v6-chart-pie--data--stroke--Color, transparent); stroke-width: 1;"
               transform="translate(115, 115)"
             />
           </g>
@@ -53,21 +54,21 @@ exports[`ReportChart expect to render with not reporting hosts 1`] = `
             direction="inherit"
             dx="0"
             x="115"
-            y="113.675"
+            y="114.15"
           >
             <tspan
               dx="0"
               dy="0"
-              style="font-size: 24px; text-anchor: middle; font-family: var(--pf-chart-global--FontFamily); letter-spacing: var(--pf-chart-global--letter-spacing); fill: #252525; stroke: transparent;"
+              style="fill: var(--pf-v6-chart-donut--label--title--Fill, #1f1f1f); font-size: 22px; text-anchor: middle; font-family: var(--pf-v6-chart-global--FontFamily, 'Red Hat Text', 'RedHatText', 'Noto Sans Arabic', 'Noto Sans Hebrew', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans Malayalam', 'Noto Sans SC', 'Noto Sans TC', 'Noto Sans Thai', Helvetica, Arial, sans-serif); letter-spacing: var(--pf-v6-chart-global--letter-spacing, normal); stroke: transparent;"
               text-anchor="middle"
               x="115"
             >
-              0
+              80%
             </tspan>
             <tspan
               dx="0"
-              dy="13.5"
-              style="fill: #b8bbbe; font-size: 14px; text-anchor: middle; font-family: var(--pf-chart-global--FontFamily); letter-spacing: var(--pf-chart-global--letter-spacing); stroke: transparent;"
+              dy="13.6"
+              style="fill: var(--pf-v6-chart-donut--label--subtitle--Fill, #a3a3a3); font-size: 14px; text-anchor: middle; font-family: var(--pf-v6-chart-global--FontFamily, 'Red Hat Text', 'RedHatText', 'Noto Sans Arabic', 'Noto Sans Hebrew', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans Malayalam', 'Noto Sans SC', 'Noto Sans TC', 'Noto Sans Thai', Helvetica, Arial, sans-serif); letter-spacing: var(--pf-v6-chart-global--letter-spacing, normal); stroke: transparent;"
               text-anchor="middle"
               x="115"
             >
@@ -76,11 +77,11 @@ exports[`ReportChart expect to render with not reporting hosts 1`] = `
           </text>
         </svg>
         <div
-          style="z-index: 99; position: absolute; top: 0px; left: 0px; width: 100%; height: 100%;"
+          style="width: 100%; height: 100%; z-index: 99; position: absolute; top: 0px; left: 0px;"
         >
           <svg
             height="230"
-            style="overflow: visible; width: 100%; height: 100%;"
+            style="width: 100%; height: 100%; overflow: visible;"
             viewBox="0 0 230 230"
             width="230"
           />
@@ -88,18 +89,18 @@ exports[`ReportChart expect to render with not reporting hosts 1`] = `
       </div>
     </div>
     <div
-      class="pf-l-grid__item pf-m-6-col pf-u-display-flex pf-u-align-items-center"
-      style="font-size: .85em; height: 100%;"
+      class="pf-v6-l-grid__item pf-m-6-col pf-v5-u-display-flex pf-v5-u-align-items-center"
+      style="font-size: 0.85em; height: 100%;"
     >
       <ul
-        class="pf-c-list"
+        class="pf-v6-c-list"
       >
         <li
-          class="pf-c-list__item"
-          style="vertical-align: middle; display: inline-block;"
+          class="pf-v6-c-list__item"
+          style="vertical-align: middle;"
         >
           <span
-            class="pf-c-list__item-icon"
+            class="pf-v6-c-list__item-icon"
           >
             <span
               style="width: 10px; height: 10px; display: inline-block; background: rgb(0, 102, 204);"
@@ -107,53 +108,29 @@ exports[`ReportChart expect to render with not reporting hosts 1`] = `
                
             </span>
           </span>
-          0 systems compliant
+          <span
+            class="pf-v6-c-list__item-text"
+          >
+            4 systems compliant
+          </span>
         </li>
         <li
-          class="pf-c-list__item"
-          style="vertical-align: middle; display: inline-block;"
+          class="pf-v6-c-list__item"
+          style="vertical-align: middle;"
         >
           <span
-            class="pf-c-list__item-icon"
+            class="pf-v6-c-list__item-icon"
           >
             <span
-              style="width: 10px; height: 10px; display: inline-block; background: rgb(81, 157, 233);"
+              style="width: 10px; height: 10px; display: inline-block; background: rgb(146, 197, 249);"
             >
                
             </span>
           </span>
-          0 systems non-compliant
-        </li>
-        <li
-          class="pf-c-list__item"
-          style="vertical-align: middle; display: inline-block;"
-        >
           <span
-            class="pf-c-list__item-icon"
+            class="pf-v6-c-list__item-text"
           >
-            <span
-              style="width: 10px; height: 10px; display: inline-block; background: rgb(244, 193, 69);"
-            >
-               
-            </span>
-          </span>
-          0 systems not supported
-          <span>
-             
-            <svg
-              aria-hidden="true"
-              class="grey-icon"
-              fill="currentColor"
-              height="1em"
-              role="img"
-              style="cursor: pointer;"
-              viewBox="0 0 512 512"
-              width="1em"
-            >
-              <path
-                d="M256 8C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm0 448c-110.532 0-200-89.431-200-200 0-110.495 89.472-200 200-200 110.491 0 200 89.471 200 200 0 110.53-89.431 200-200 200zm107.244-255.2c0 67.052-72.421 68.084-72.421 92.863V300c0 6.627-5.373 12-12 12h-45.647c-6.627 0-12-5.373-12-12v-8.659c0-35.745 27.1-50.034 47.579-61.516 17.561-9.845 28.324-16.541 28.324-29.579 0-17.246-21.999-28.693-39.784-28.693-23.189 0-33.894 10.977-48.942 29.969-4.057 5.12-11.46 6.071-16.666 2.124l-27.824-21.098c-5.107-3.872-6.251-11.066-2.644-16.363C184.846 131.491 214.94 112 261.794 112c49.071 0 101.45 38.304 101.45 88.8zM298 368c0 23.159-18.841 42-42 42s-42-18.841-42-42 18.841-42 42-42 42 18.841 42 42z"
-              />
-            </svg>
+            1 system non-compliant
           </span>
         </li>
       </ul>
@@ -162,52 +139,53 @@ exports[`ReportChart expect to render with not reporting hosts 1`] = `
 </div>
 `;
 
-exports[`ReportChart expect to render with unsupported hosts 1`] = `
+exports[`ReportChart expect to render with 2 unsupported & 3 never reported hosts 1`] = `
 <div>
   <div
-    class="pf-l-grid chart-container"
+    aria-label="Report chart"
+    class="pf-v6-l-grid"
   >
     <div
-      class="pf-l-grid__item pf-m-6-col"
+      class="pf-v6-l-grid__item pf-m-6-col"
     >
       <div
-        class="pf-c-chart"
-        style="pointer-events: none; position: relative; width: 100%; height: 100%;"
+        class="pf-v6-c-chart"
+        style="pointer-events: none; position: relative;"
       >
         <svg
           height="230"
           role="img"
-          style="pointer-events: all; width: 100%; height: 100%;"
+          style="width: 100%; height: 100%; pointer-events: all;"
           viewBox="0 0 230 230"
           width="230"
         >
           <g>
             <path
-              d="M5.8170722959499274e-15,-95L5.3884459162483544e-15,-88Z"
+              d="M1.130044229770525,-94.99327870980537A95,95,0,0,1,56.74987327881187,76.1869534949311L52.6350622295466,70.52340196056737A88,88,0,0,0,1.1300442297705258,-87.99274401925855Z"
               role="presentation"
               shape-rendering="auto"
-              style="fill: #d2d2d2; padding: 8px; stroke: transparent; stroke-width: 1;"
+              style="fill: #0066cc; padding: 8px; stroke: var(--pf-v6-chart-pie--data--stroke--Color, transparent); stroke-width: 1;"
               transform="translate(115, 115)"
             />
             <path
-              d="M5.8170722959499274e-15,-95L5.3884459162483544e-15,-88Z"
+              d="M54.921423306252464,77.51540016032574A95,95,0,0,1,1.130044229770525,94.99327870980537L1.1300442297705258,87.99274401925855A88,88,0,0,0,50.806612256987194,71.851848625962Z"
               role="presentation"
               shape-rendering="auto"
-              style="fill: #d2d2d2; padding: 8px; stroke: transparent; stroke-width: 1;"
+              style="fill: #92c5f9; padding: 8px; stroke: var(--pf-v6-chart-pie--data--stroke--Color, transparent); stroke-width: 1;"
               transform="translate(115, 115)"
             />
             <path
-              d="M5.8170722959499274e-15,-95L5.3884459162483544e-15,-88Z"
+              d="M-1.1300442297705133,94.99327870980537A95,95,0,0,1,-89.99477384980764,30.42927340115074L-83.3368697148128,28.26598921206043A88,88,0,0,0,-1.1300442297705149,87.99274401925855Z"
               role="presentation"
               shape-rendering="auto"
-              style="fill: #d2d2d2; padding: 8px; stroke: transparent; stroke-width: 1;"
+              style="fill: #dca614; padding: 8px; stroke: var(--pf-v6-chart-pie--data--stroke--Color, transparent); stroke-width: 1;"
               transform="translate(115, 115)"
             />
             <path
-              d="M5.8170722959499274e-15,-95L5.3884459162483544e-15,-88Z"
+              d="M-90.69317959259651,28.279801544300756A95,95,0,0,1,-1.1300442297705369,-94.99327870980537L-1.1300442297705169,-87.99274401925855A88,88,0,0,0,-84.03527545760168,26.116517355210412Z"
               role="presentation"
               shape-rendering="auto"
-              style="fill: #d2d2d2; padding: 8px; stroke: transparent; stroke-width: 1;"
+              style="fill: #e0e0e0; padding: 8px; stroke: var(--pf-v6-chart-pie--data--stroke--Color, transparent); stroke-width: 1;"
               transform="translate(115, 115)"
             />
           </g>
@@ -215,21 +193,21 @@ exports[`ReportChart expect to render with unsupported hosts 1`] = `
             direction="inherit"
             dx="0"
             x="115"
-            y="113.675"
+            y="114.15"
           >
             <tspan
               dx="0"
               dy="0"
-              style="font-size: 24px; text-anchor: middle; font-family: var(--pf-chart-global--FontFamily); letter-spacing: var(--pf-chart-global--letter-spacing); fill: #252525; stroke: transparent;"
+              style="fill: var(--pf-v6-chart-donut--label--title--Fill, #1f1f1f); font-size: 22px; text-anchor: middle; font-family: var(--pf-v6-chart-global--FontFamily, 'Red Hat Text', 'RedHatText', 'Noto Sans Arabic', 'Noto Sans Hebrew', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans Malayalam', 'Noto Sans SC', 'Noto Sans TC', 'Noto Sans Thai', Helvetica, Arial, sans-serif); letter-spacing: var(--pf-v6-chart-global--letter-spacing, normal); stroke: transparent;"
               text-anchor="middle"
               x="115"
             >
-              0
+              40%
             </tspan>
             <tspan
               dx="0"
-              dy="13.5"
-              style="fill: #b8bbbe; font-size: 14px; text-anchor: middle; font-family: var(--pf-chart-global--FontFamily); letter-spacing: var(--pf-chart-global--letter-spacing); stroke: transparent;"
+              dy="13.6"
+              style="fill: var(--pf-v6-chart-donut--label--subtitle--Fill, #a3a3a3); font-size: 14px; text-anchor: middle; font-family: var(--pf-v6-chart-global--FontFamily, 'Red Hat Text', 'RedHatText', 'Noto Sans Arabic', 'Noto Sans Hebrew', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans Malayalam', 'Noto Sans SC', 'Noto Sans TC', 'Noto Sans Thai', Helvetica, Arial, sans-serif); letter-spacing: var(--pf-v6-chart-global--letter-spacing, normal); stroke: transparent;"
               text-anchor="middle"
               x="115"
             >
@@ -238,11 +216,11 @@ exports[`ReportChart expect to render with unsupported hosts 1`] = `
           </text>
         </svg>
         <div
-          style="z-index: 99; position: absolute; top: 0px; left: 0px; width: 100%; height: 100%;"
+          style="width: 100%; height: 100%; z-index: 99; position: absolute; top: 0px; left: 0px;"
         >
           <svg
             height="230"
-            style="overflow: visible; width: 100%; height: 100%;"
+            style="width: 100%; height: 100%; overflow: visible;"
             viewBox="0 0 230 230"
             width="230"
           />
@@ -250,18 +228,18 @@ exports[`ReportChart expect to render with unsupported hosts 1`] = `
       </div>
     </div>
     <div
-      class="pf-l-grid__item pf-m-6-col pf-u-display-flex pf-u-align-items-center"
-      style="font-size: .85em; height: 100%;"
+      class="pf-v6-l-grid__item pf-m-6-col pf-v5-u-display-flex pf-v5-u-align-items-center"
+      style="font-size: 0.85em; height: 100%;"
     >
       <ul
-        class="pf-c-list"
+        class="pf-v6-c-list"
       >
         <li
-          class="pf-c-list__item"
-          style="vertical-align: middle; display: inline-block;"
+          class="pf-v6-c-list__item"
+          style="vertical-align: middle;"
         >
           <span
-            class="pf-c-list__item-icon"
+            class="pf-v6-c-list__item-icon"
           >
             <span
               style="width: 10px; height: 10px; display: inline-block; background: rgb(0, 102, 204);"
@@ -269,377 +247,125 @@ exports[`ReportChart expect to render with unsupported hosts 1`] = `
                
             </span>
           </span>
-          0 systems compliant
+          <span
+            class="pf-v6-c-list__item-text"
+          >
+            4 systems compliant
+          </span>
         </li>
         <li
-          class="pf-c-list__item"
-          style="vertical-align: middle; display: inline-block;"
+          class="pf-v6-c-list__item"
+          style="vertical-align: middle;"
         >
           <span
-            class="pf-c-list__item-icon"
+            class="pf-v6-c-list__item-icon"
           >
             <span
-              style="width: 10px; height: 10px; display: inline-block; background: rgb(81, 157, 233);"
+              style="width: 10px; height: 10px; display: inline-block; background: rgb(146, 197, 249);"
             >
                
             </span>
           </span>
-          0 systems non-compliant
+          <span
+            class="pf-v6-c-list__item-text"
+          >
+            1 system non-compliant
+          </span>
         </li>
         <li
-          class="pf-c-list__item"
-          style="vertical-align: middle; display: inline-block;"
+          class="pf-v6-c-list__item"
+          style="vertical-align: middle;"
         >
           <span
-            class="pf-c-list__item-icon"
+            class="pf-v6-c-list__item-icon"
           >
             <span
-              style="width: 10px; height: 10px; display: inline-block; background: rgb(244, 193, 69);"
+              style="width: 10px; height: 10px; display: inline-block; background: rgb(220, 166, 20);"
             >
                
             </span>
           </span>
-          0 systems not supported
-          <span>
-             
-            <svg
-              aria-hidden="true"
-              class="grey-icon"
-              fill="currentColor"
-              height="1em"
-              role="img"
-              style="cursor: pointer;"
-              viewBox="0 0 512 512"
-              width="1em"
+          <span
+            class="pf-v6-c-list__item-text"
+          >
+            2 systems not supported
+            <div
+              style="display: contents;"
             >
-              <path
-                d="M256 8C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm0 448c-110.532 0-200-89.431-200-200 0-110.495 89.472-200 200-200 110.491 0 200 89.471 200 200 0 110.53-89.431 200-200 200zm107.244-255.2c0 67.052-72.421 68.084-72.421 92.863V300c0 6.627-5.373 12-12 12h-45.647c-6.627 0-12-5.373-12-12v-8.659c0-35.745 27.1-50.034 47.579-61.516 17.561-9.845 28.324-16.541 28.324-29.579 0-17.246-21.999-28.693-39.784-28.693-23.189 0-33.894 10.977-48.942 29.969-4.057 5.12-11.46 6.071-16.666 2.124l-27.824-21.098c-5.107-3.872-6.251-11.066-2.644-16.363C184.846 131.491 214.94 112 261.794 112c49.071 0 101.45 38.304 101.45 88.8zM298 368c0 23.159-18.841 42-42 42s-42-18.841-42-42 18.841-42 42-42 42 18.841 42 42z"
-              />
-            </svg>
+              <span>
+                 
+                <span
+                  class="pf-v6-c-icon grey-icon"
+                  style="cursor: pointer; margin-top: 3px;"
+                >
+                  <span
+                    class="pf-v6-c-icon__content"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="pf-v6-svg"
+                      fill="currentColor"
+                      height="1em"
+                      role="img"
+                      viewBox="0 0 512 512"
+                      width="1em"
+                    >
+                      <path
+                        d="M256 8C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm0 448c-110.532 0-200-89.431-200-200 0-110.495 89.472-200 200-200 110.491 0 200 89.471 200 200 0 110.53-89.431 200-200 200zm107.244-255.2c0 67.052-72.421 68.084-72.421 92.863V300c0 6.627-5.373 12-12 12h-45.647c-6.627 0-12-5.373-12-12v-8.659c0-35.745 27.1-50.034 47.579-61.516 17.561-9.845 28.324-16.541 28.324-29.579 0-17.246-21.999-28.693-39.784-28.693-23.189 0-33.894 10.977-48.942 29.969-4.057 5.12-11.46 6.071-16.666 2.124l-27.824-21.098c-5.107-3.872-6.251-11.066-2.644-16.363C184.846 131.491 214.94 112 261.794 112c49.071 0 101.45 38.304 101.45 88.8zM298 368c0 23.159-18.841 42-42 42s-42-18.841-42-42 18.841-42 42-42 42 18.841 42 42z"
+                      />
+                    </svg>
+                  </span>
+                </span>
+              </span>
+            </div>
           </span>
         </li>
-      </ul>
-    </div>
-  </div>
-</div>
-`;
-
-exports[`ReportChart expect to render with zero unsupported hosts 1`] = `
-<div>
-  <div
-    class="pf-l-grid chart-container"
-  >
-    <div
-      class="pf-l-grid__item pf-m-6-col"
-    >
-      <div
-        class="pf-c-chart"
-        style="pointer-events: none; position: relative; width: 100%; height: 100%;"
-      >
-        <svg
-          height="230"
-          role="img"
-          style="pointer-events: all; width: 100%; height: 100%;"
-          viewBox="0 0 230 230"
-          width="230"
-        >
-          <g>
-            <path
-              d="M5.8170722959499274e-15,-95L5.3884459162483544e-15,-88Z"
-              role="presentation"
-              shape-rendering="auto"
-              style="fill: #d2d2d2; padding: 8px; stroke: transparent; stroke-width: 1;"
-              transform="translate(115, 115)"
-            />
-            <path
-              d="M5.8170722959499274e-15,-95L5.3884459162483544e-15,-88Z"
-              role="presentation"
-              shape-rendering="auto"
-              style="fill: #d2d2d2; padding: 8px; stroke: transparent; stroke-width: 1;"
-              transform="translate(115, 115)"
-            />
-            <path
-              d="M5.8170722959499274e-15,-95L5.3884459162483544e-15,-88Z"
-              role="presentation"
-              shape-rendering="auto"
-              style="fill: #d2d2d2; padding: 8px; stroke: transparent; stroke-width: 1;"
-              transform="translate(115, 115)"
-            />
-            <path
-              d="M5.8170722959499274e-15,-95L5.3884459162483544e-15,-88Z"
-              role="presentation"
-              shape-rendering="auto"
-              style="fill: #d2d2d2; padding: 8px; stroke: transparent; stroke-width: 1;"
-              transform="translate(115, 115)"
-            />
-          </g>
-          <text
-            direction="inherit"
-            dx="0"
-            x="115"
-            y="113.675"
-          >
-            <tspan
-              dx="0"
-              dy="0"
-              style="font-size: 24px; text-anchor: middle; font-family: var(--pf-chart-global--FontFamily); letter-spacing: var(--pf-chart-global--letter-spacing); fill: #252525; stroke: transparent;"
-              text-anchor="middle"
-              x="115"
-            >
-              0
-            </tspan>
-            <tspan
-              dx="0"
-              dy="13.5"
-              style="fill: #b8bbbe; font-size: 14px; text-anchor: middle; font-family: var(--pf-chart-global--FontFamily); letter-spacing: var(--pf-chart-global--letter-spacing); stroke: transparent;"
-              text-anchor="middle"
-              x="115"
-            >
-              Compliant
-            </tspan>
-          </text>
-        </svg>
-        <div
-          style="z-index: 99; position: absolute; top: 0px; left: 0px; width: 100%; height: 100%;"
-        >
-          <svg
-            height="230"
-            style="overflow: visible; width: 100%; height: 100%;"
-            viewBox="0 0 230 230"
-            width="230"
-          />
-        </div>
-      </div>
-    </div>
-    <div
-      class="pf-l-grid__item pf-m-6-col pf-u-display-flex pf-u-align-items-center"
-      style="font-size: .85em; height: 100%;"
-    >
-      <ul
-        class="pf-c-list"
-      >
         <li
-          class="pf-c-list__item"
-          style="vertical-align: middle; display: inline-block;"
+          class="pf-v6-c-list__item"
+          style="vertical-align: middle;"
         >
           <span
-            class="pf-c-list__item-icon"
+            class="pf-v6-c-list__item-icon"
           >
             <span
-              style="width: 10px; height: 10px; display: inline-block; background: rgb(0, 102, 204);"
+              style="width: 10px; height: 10px; display: inline-block; background: rgb(224, 224, 224);"
             >
                
             </span>
           </span>
-          0 systems compliant
-        </li>
-        <li
-          class="pf-c-list__item"
-          style="vertical-align: middle; display: inline-block;"
-        >
           <span
-            class="pf-c-list__item-icon"
+            class="pf-v6-c-list__item-text"
           >
-            <span
-              style="width: 10px; height: 10px; display: inline-block; background: rgb(81, 157, 233);"
+            3 systems never reported
+            <div
+              style="display: contents;"
             >
-               
-            </span>
-          </span>
-          0 systems non-compliant
-        </li>
-        <li
-          class="pf-c-list__item"
-          style="vertical-align: middle; display: inline-block;"
-        >
-          <span
-            class="pf-c-list__item-icon"
-          >
-            <span
-              style="width: 10px; height: 10px; display: inline-block; background: rgb(244, 193, 69);"
-            >
-               
-            </span>
-          </span>
-          0 systems not supported
-          <span>
-             
-            <svg
-              aria-hidden="true"
-              class="grey-icon"
-              fill="currentColor"
-              height="1em"
-              role="img"
-              style="cursor: pointer;"
-              viewBox="0 0 512 512"
-              width="1em"
-            >
-              <path
-                d="M256 8C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm0 448c-110.532 0-200-89.431-200-200 0-110.495 89.472-200 200-200 110.491 0 200 89.471 200 200 0 110.53-89.431 200-200 200zm107.244-255.2c0 67.052-72.421 68.084-72.421 92.863V300c0 6.627-5.373 12-12 12h-45.647c-6.627 0-12-5.373-12-12v-8.659c0-35.745 27.1-50.034 47.579-61.516 17.561-9.845 28.324-16.541 28.324-29.579 0-17.246-21.999-28.693-39.784-28.693-23.189 0-33.894 10.977-48.942 29.969-4.057 5.12-11.46 6.071-16.666 2.124l-27.824-21.098c-5.107-3.872-6.251-11.066-2.644-16.363C184.846 131.491 214.94 112 261.794 112c49.071 0 101.45 38.304 101.45 88.8zM298 368c0 23.159-18.841 42-42 42s-42-18.841-42-42 18.841-42 42-42 42 18.841 42 42z"
-              />
-            </svg>
-          </span>
-        </li>
-      </ul>
-    </div>
-  </div>
-</div>
-`;
-
-exports[`ReportChart expect to render without error with no profile 1`] = `
-<div>
-  <div
-    class="pf-l-grid chart-container"
-  >
-    <div
-      class="pf-l-grid__item pf-m-6-col"
-    >
-      <div
-        class="pf-c-chart"
-        style="pointer-events: none; position: relative; width: 100%; height: 100%;"
-      >
-        <svg
-          height="230"
-          role="img"
-          style="pointer-events: all; width: 100%; height: 100%;"
-          viewBox="0 0 230 230"
-          width="230"
-        >
-          <g>
-            <path
-              d="M5.8170722959499274e-15,-95L5.3884459162483544e-15,-88Z"
-              role="presentation"
-              shape-rendering="auto"
-              style="fill: #d2d2d2; padding: 8px; stroke: transparent; stroke-width: 1;"
-              transform="translate(115, 115)"
-            />
-            <path
-              d="M5.8170722959499274e-15,-95L5.3884459162483544e-15,-88Z"
-              role="presentation"
-              shape-rendering="auto"
-              style="fill: #d2d2d2; padding: 8px; stroke: transparent; stroke-width: 1;"
-              transform="translate(115, 115)"
-            />
-            <path
-              d="M5.8170722959499274e-15,-95L5.3884459162483544e-15,-88Z"
-              role="presentation"
-              shape-rendering="auto"
-              style="fill: #d2d2d2; padding: 8px; stroke: transparent; stroke-width: 1;"
-              transform="translate(115, 115)"
-            />
-            <path
-              d="M5.8170722959499274e-15,-95L5.3884459162483544e-15,-88Z"
-              role="presentation"
-              shape-rendering="auto"
-              style="fill: #d2d2d2; padding: 8px; stroke: transparent; stroke-width: 1;"
-              transform="translate(115, 115)"
-            />
-          </g>
-          <text
-            direction="inherit"
-            dx="0"
-            x="115"
-            y="113.675"
-          >
-            <tspan
-              dx="0"
-              dy="0"
-              style="font-size: 24px; text-anchor: middle; font-family: var(--pf-chart-global--FontFamily); letter-spacing: var(--pf-chart-global--letter-spacing); fill: #252525; stroke: transparent;"
-              text-anchor="middle"
-              x="115"
-            >
-              0
-            </tspan>
-            <tspan
-              dx="0"
-              dy="13.5"
-              style="fill: #b8bbbe; font-size: 14px; text-anchor: middle; font-family: var(--pf-chart-global--FontFamily); letter-spacing: var(--pf-chart-global--letter-spacing); stroke: transparent;"
-              text-anchor="middle"
-              x="115"
-            >
-              Compliant
-            </tspan>
-          </text>
-        </svg>
-        <div
-          style="z-index: 99; position: absolute; top: 0px; left: 0px; width: 100%; height: 100%;"
-        >
-          <svg
-            height="230"
-            style="overflow: visible; width: 100%; height: 100%;"
-            viewBox="0 0 230 230"
-            width="230"
-          />
-        </div>
-      </div>
-    </div>
-    <div
-      class="pf-l-grid__item pf-m-6-col pf-u-display-flex pf-u-align-items-center"
-      style="font-size: .85em; height: 100%;"
-    >
-      <ul
-        class="pf-c-list"
-      >
-        <li
-          class="pf-c-list__item"
-          style="vertical-align: middle; display: inline-block;"
-        >
-          <span
-            class="pf-c-list__item-icon"
-          >
-            <span
-              style="width: 10px; height: 10px; display: inline-block; background: rgb(0, 102, 204);"
-            >
-               
-            </span>
-          </span>
-          0 systems compliant
-        </li>
-        <li
-          class="pf-c-list__item"
-          style="vertical-align: middle; display: inline-block;"
-        >
-          <span
-            class="pf-c-list__item-icon"
-          >
-            <span
-              style="width: 10px; height: 10px; display: inline-block; background: rgb(81, 157, 233);"
-            >
-               
-            </span>
-          </span>
-          0 systems non-compliant
-        </li>
-        <li
-          class="pf-c-list__item"
-          style="vertical-align: middle; display: inline-block;"
-        >
-          <span
-            class="pf-c-list__item-icon"
-          >
-            <span
-              style="width: 10px; height: 10px; display: inline-block; background: rgb(244, 193, 69);"
-            >
-               
-            </span>
-          </span>
-          0 systems not supported
-          <span>
-             
-            <svg
-              aria-hidden="true"
-              class="grey-icon"
-              fill="currentColor"
-              height="1em"
-              role="img"
-              style="cursor: pointer;"
-              viewBox="0 0 512 512"
-              width="1em"
-            >
-              <path
-                d="M256 8C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm0 448c-110.532 0-200-89.431-200-200 0-110.495 89.472-200 200-200 110.491 0 200 89.471 200 200 0 110.53-89.431 200-200 200zm107.244-255.2c0 67.052-72.421 68.084-72.421 92.863V300c0 6.627-5.373 12-12 12h-45.647c-6.627 0-12-5.373-12-12v-8.659c0-35.745 27.1-50.034 47.579-61.516 17.561-9.845 28.324-16.541 28.324-29.579 0-17.246-21.999-28.693-39.784-28.693-23.189 0-33.894 10.977-48.942 29.969-4.057 5.12-11.46 6.071-16.666 2.124l-27.824-21.098c-5.107-3.872-6.251-11.066-2.644-16.363C184.846 131.491 214.94 112 261.794 112c49.071 0 101.45 38.304 101.45 88.8zM298 368c0 23.159-18.841 42-42 42s-42-18.841-42-42 18.841-42 42-42 42 18.841 42 42z"
-              />
-            </svg>
+              <span>
+                 
+                <span
+                  class="pf-v6-c-icon grey-icon"
+                  style="cursor: pointer; margin-top: 3px;"
+                >
+                  <span
+                    class="pf-v6-c-icon__content"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="pf-v6-svg"
+                      fill="currentColor"
+                      height="1em"
+                      role="img"
+                      viewBox="0 0 512 512"
+                      width="1em"
+                    >
+                      <path
+                        d="M256 8C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm0 448c-110.532 0-200-89.431-200-200 0-110.495 89.472-200 200-200 110.491 0 200 89.471 200 200 0 110.53-89.431 200-200 200zm107.244-255.2c0 67.052-72.421 68.084-72.421 92.863V300c0 6.627-5.373 12-12 12h-45.647c-6.627 0-12-5.373-12-12v-8.659c0-35.745 27.1-50.034 47.579-61.516 17.561-9.845 28.324-16.541 28.324-29.579 0-17.246-21.999-28.693-39.784-28.693-23.189 0-33.894 10.977-48.942 29.969-4.057 5.12-11.46 6.071-16.666 2.124l-27.824-21.098c-5.107-3.872-6.251-11.066-2.644-16.363C184.846 131.491 214.94 112 261.794 112c49.071 0 101.45 38.304 101.45 88.8zM298 368c0 23.159-18.841 42-42 42s-42-18.841-42-42 18.841-42 42-42 42 18.841 42 42z"
+                      />
+                    </svg>
+                  </span>
+                </span>
+              </span>
+            </div>
           </span>
         </li>
       </ul>
@@ -651,19 +377,20 @@ exports[`ReportChart expect to render without error with no profile 1`] = `
 exports[`ReportChart expect to render without error with zero counts 1`] = `
 <div>
   <div
-    class="pf-l-grid chart-container"
+    aria-label="Report chart"
+    class="pf-v6-l-grid"
   >
     <div
-      class="pf-l-grid__item pf-m-6-col"
+      class="pf-v6-l-grid__item pf-m-6-col"
     >
       <div
-        class="pf-c-chart"
-        style="pointer-events: none; position: relative; width: 100%; height: 100%;"
+        class="pf-v6-c-chart"
+        style="pointer-events: none; position: relative;"
       >
         <svg
           height="230"
           role="img"
-          style="pointer-events: all; width: 100%; height: 100%;"
+          style="width: 100%; height: 100%; pointer-events: all;"
           viewBox="0 0 230 230"
           width="230"
         >
@@ -672,28 +399,28 @@ exports[`ReportChart expect to render without error with zero counts 1`] = `
               d="M5.8170722959499274e-15,-95L5.3884459162483544e-15,-88Z"
               role="presentation"
               shape-rendering="auto"
-              style="fill: #d2d2d2; padding: 8px; stroke: transparent; stroke-width: 1;"
+              style="fill: #f2f2f2; padding: 8px; stroke: var(--pf-v6-chart-pie--data--stroke--Color, transparent); stroke-width: 1;"
               transform="translate(115, 115)"
             />
             <path
               d="M5.8170722959499274e-15,-95L5.3884459162483544e-15,-88Z"
               role="presentation"
               shape-rendering="auto"
-              style="fill: #d2d2d2; padding: 8px; stroke: transparent; stroke-width: 1;"
+              style="fill: #f2f2f2; padding: 8px; stroke: var(--pf-v6-chart-pie--data--stroke--Color, transparent); stroke-width: 1;"
               transform="translate(115, 115)"
             />
             <path
               d="M5.8170722959499274e-15,-95L5.3884459162483544e-15,-88Z"
               role="presentation"
               shape-rendering="auto"
-              style="fill: #d2d2d2; padding: 8px; stroke: transparent; stroke-width: 1;"
+              style="fill: #f2f2f2; padding: 8px; stroke: var(--pf-v6-chart-pie--data--stroke--Color, transparent); stroke-width: 1;"
               transform="translate(115, 115)"
             />
             <path
               d="M5.8170722959499274e-15,-95L5.3884459162483544e-15,-88Z"
               role="presentation"
               shape-rendering="auto"
-              style="fill: #d2d2d2; padding: 8px; stroke: transparent; stroke-width: 1;"
+              style="fill: #f2f2f2; padding: 8px; stroke: var(--pf-v6-chart-pie--data--stroke--Color, transparent); stroke-width: 1;"
               transform="translate(115, 115)"
             />
           </g>
@@ -701,21 +428,21 @@ exports[`ReportChart expect to render without error with zero counts 1`] = `
             direction="inherit"
             dx="0"
             x="115"
-            y="113.675"
+            y="114.15"
           >
             <tspan
               dx="0"
               dy="0"
-              style="font-size: 24px; text-anchor: middle; font-family: var(--pf-chart-global--FontFamily); letter-spacing: var(--pf-chart-global--letter-spacing); fill: #252525; stroke: transparent;"
+              style="fill: var(--pf-v6-chart-donut--label--title--Fill, #1f1f1f); font-size: 22px; text-anchor: middle; font-family: var(--pf-v6-chart-global--FontFamily, 'Red Hat Text', 'RedHatText', 'Noto Sans Arabic', 'Noto Sans Hebrew', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans Malayalam', 'Noto Sans SC', 'Noto Sans TC', 'Noto Sans Thai', Helvetica, Arial, sans-serif); letter-spacing: var(--pf-v6-chart-global--letter-spacing, normal); stroke: transparent;"
               text-anchor="middle"
               x="115"
             >
-              0
+              0%
             </tspan>
             <tspan
               dx="0"
-              dy="13.5"
-              style="fill: #b8bbbe; font-size: 14px; text-anchor: middle; font-family: var(--pf-chart-global--FontFamily); letter-spacing: var(--pf-chart-global--letter-spacing); stroke: transparent;"
+              dy="13.6"
+              style="fill: var(--pf-v6-chart-donut--label--subtitle--Fill, #a3a3a3); font-size: 14px; text-anchor: middle; font-family: var(--pf-v6-chart-global--FontFamily, 'Red Hat Text', 'RedHatText', 'Noto Sans Arabic', 'Noto Sans Hebrew', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans Malayalam', 'Noto Sans SC', 'Noto Sans TC', 'Noto Sans Thai', Helvetica, Arial, sans-serif); letter-spacing: var(--pf-v6-chart-global--letter-spacing, normal); stroke: transparent;"
               text-anchor="middle"
               x="115"
             >
@@ -724,11 +451,11 @@ exports[`ReportChart expect to render without error with zero counts 1`] = `
           </text>
         </svg>
         <div
-          style="z-index: 99; position: absolute; top: 0px; left: 0px; width: 100%; height: 100%;"
+          style="width: 100%; height: 100%; z-index: 99; position: absolute; top: 0px; left: 0px;"
         >
           <svg
             height="230"
-            style="overflow: visible; width: 100%; height: 100%;"
+            style="width: 100%; height: 100%; overflow: visible;"
             viewBox="0 0 230 230"
             width="230"
           />
@@ -736,18 +463,18 @@ exports[`ReportChart expect to render without error with zero counts 1`] = `
       </div>
     </div>
     <div
-      class="pf-l-grid__item pf-m-6-col pf-u-display-flex pf-u-align-items-center"
-      style="font-size: .85em; height: 100%;"
+      class="pf-v6-l-grid__item pf-m-6-col pf-v5-u-display-flex pf-v5-u-align-items-center"
+      style="font-size: 0.85em; height: 100%;"
     >
       <ul
-        class="pf-c-list"
+        class="pf-v6-c-list"
       >
         <li
-          class="pf-c-list__item"
-          style="vertical-align: middle; display: inline-block;"
+          class="pf-v6-c-list__item"
+          style="vertical-align: middle;"
         >
           <span
-            class="pf-c-list__item-icon"
+            class="pf-v6-c-list__item-icon"
           >
             <span
               style="width: 10px; height: 10px; display: inline-block; background: rgb(0, 102, 204);"
@@ -755,53 +482,29 @@ exports[`ReportChart expect to render without error with zero counts 1`] = `
                
             </span>
           </span>
-          0 systems compliant
+          <span
+            class="pf-v6-c-list__item-text"
+          >
+            0 systems compliant
+          </span>
         </li>
         <li
-          class="pf-c-list__item"
-          style="vertical-align: middle; display: inline-block;"
+          class="pf-v6-c-list__item"
+          style="vertical-align: middle;"
         >
           <span
-            class="pf-c-list__item-icon"
+            class="pf-v6-c-list__item-icon"
           >
             <span
-              style="width: 10px; height: 10px; display: inline-block; background: rgb(81, 157, 233);"
+              style="width: 10px; height: 10px; display: inline-block; background: rgb(146, 197, 249);"
             >
                
             </span>
           </span>
-          0 systems non-compliant
-        </li>
-        <li
-          class="pf-c-list__item"
-          style="vertical-align: middle; display: inline-block;"
-        >
           <span
-            class="pf-c-list__item-icon"
+            class="pf-v6-c-list__item-text"
           >
-            <span
-              style="width: 10px; height: 10px; display: inline-block; background: rgb(244, 193, 69);"
-            >
-               
-            </span>
-          </span>
-          0 systems not supported
-          <span>
-             
-            <svg
-              aria-hidden="true"
-              class="grey-icon"
-              fill="currentColor"
-              height="1em"
-              role="img"
-              style="cursor: pointer;"
-              viewBox="0 0 512 512"
-              width="1em"
-            >
-              <path
-                d="M256 8C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm0 448c-110.532 0-200-89.431-200-200 0-110.495 89.472-200 200-200 110.491 0 200 89.471 200 200 0 110.53-89.431 200-200 200zm107.244-255.2c0 67.052-72.421 68.084-72.421 92.863V300c0 6.627-5.373 12-12 12h-45.647c-6.627 0-12-5.373-12-12v-8.659c0-35.745 27.1-50.034 47.579-61.516 17.561-9.845 28.324-16.541 28.324-29.579 0-17.246-21.999-28.693-39.784-28.693-23.189 0-33.894 10.977-48.942 29.969-4.057 5.12-11.46 6.071-16.666 2.124l-27.824-21.098c-5.107-3.872-6.251-11.066-2.644-16.363C184.846 131.491 214.94 112 261.794 112c49.071 0 101.45 38.304 101.45 88.8zM298 368c0 23.159-18.841 42-42 42s-42-18.841-42-42 18.841-42 42-42 42 18.841 42 42z"
-              />
-            </svg>
+            0 systems non-compliant
           </span>
         </li>
       </ul>

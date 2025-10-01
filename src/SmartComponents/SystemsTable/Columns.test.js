@@ -12,12 +12,12 @@ const column = {
 
 describe('compileColumnRenderFunc', () => {
   it('a column with a renderFunc', () => {
-    const compiledColumn = compileColumnRenderFunc(column);
-    expect(compiledColumn).toMatchSnapshot();
+    const { result } = compileColumnRenderFunc(column);
+    expect(result).toMatchSnapshot();
   });
 });
 
-describe('compileColumnRenderFunc', () => {
+describe('customColumn', () => {
   it('a column with custom props appended', () => {
     const customColumnResult = customColumn(column, { isStatic: true });
     expect(customColumnResult).toMatchSnapshot();

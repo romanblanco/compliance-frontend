@@ -1,69 +1,94 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { useOnSave } from './hooks';
+import TestWrapper from 'Utilities/TestWrapper';
 
-import { usePolicy } from 'Mutations';
-jest.mock('Mutations');
+import useAssignRules from 'Utilities/hooks/api/useAssignRules';
+import useAssignSystems from 'Utilities/hooks/api/useAssignSystems';
+import useTailorings from 'Utilities/hooks/api/useTailorings';
+import useUpdatePolicy from 'Utilities/hooks/api/useUpdatePolicy';
 
-import { dispatchNotification } from 'Utilities/Dispatcher';
-jest.mock('Utilities/Dispatcher');
-
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useHistory: jest.fn(() => []),
-  useLocation: jest.fn(() => ({
-    hash: '#hash',
-  })),
+jest.mock('Utilities/hooks/useAnchor', () => ({
+  __esModule: true,
+  default: () => () => ({}),
 }));
+
+jest.mock('Utilities/hooks/api/useAssignRules');
+jest.mock('Utilities/hooks/api/useAssignSystems');
+jest.mock('Utilities/hooks/api/useTailorings');
+jest.mock('Utilities/hooks/api/useUpdatePolicy');
 
 describe('useOnSave', function () {
   const policy = {};
-  const updatedPolicy = {};
-  const mockedNotification = jest.fn();
+  const updatedPolicy = { description: 'Foo' };
+  const onSaveCallBack = jest.fn();
+  const onErrorCallback = jest.fn();
 
   beforeEach(() => {
-    dispatchNotification.mockImplementation(mockedNotification);
+    onSaveCallBack.mockReset();
+    onErrorCallback.mockReset();
+    useAssignRules.mockReturnValue({ fetch: jest.fn(() => Promise.resolve()) });
+    useAssignSystems.mockReturnValue({
+      fetch: jest.fn(() => Promise.resolve()),
+    });
+    useTailorings.mockReturnValue({
+      fetch: jest.fn(() => Promise.resolve({ data: [] })),
+    });
   });
 
-  it('returns an array with a boolean and function', () => {
-    const { result } = renderHook(() => useOnSave());
-    expect(result).toMatchSnapshot();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it('returns a function to call with a policy and updated policy', async () => {
-    usePolicy.mockImplementation(() => {
-      return () => Promise.resolve();
+    useUpdatePolicy.mockReturnValue({
+      fetch: jest.fn(() => Promise.resolve()),
     });
-    const { result, waitForValueToChange } = renderHook(() => useOnSave());
+
+    const { result } = renderHook(
+      () =>
+        useOnSave(policy, updatedPolicy, {
+          onSave: onSaveCallBack,
+          onError: onErrorCallback,
+        }),
+      {
+        wrapper: TestWrapper,
+      },
+    );
+    const [, onSave] = result.current;
 
     act(() => {
-      result.current[1](policy, updatedPolicy);
+      onSave();
     });
 
-    await waitForValueToChange(() => result.current[0]);
+    await waitFor(() => expect(onSaveCallBack).toHaveBeenCalled());
 
-    expect(mockedNotification).toHaveBeenCalledWith({
-      variant: 'success',
-      title: 'Policy updated',
-      autoDismiss: true,
-    });
+    expect(onErrorCallback).not.toHaveBeenCalled();
   });
 
   it('returns a function to call with a policy and updated policy and can raise an error', async () => {
-    usePolicy.mockImplementation(() => {
-      return () => Promise.reject({});
+    useUpdatePolicy.mockReturnValue({
+      fetch: jest.fn(() => {
+        return Promise.reject(new Error('Update failed'));
+      }),
     });
-    const { result, waitForValueToChange } = renderHook(() => useOnSave());
 
+    const { result } = renderHook(
+      () =>
+        useOnSave(policy, updatedPolicy, {
+          onSave: onSaveCallBack,
+          onError: onErrorCallback,
+        }),
+      {
+        wrapper: TestWrapper,
+      },
+    );
+    const [, onSave] = result.current;
     act(() => {
-      result.current[1](policy, updatedPolicy);
+      onSave();
     });
 
-    await waitForValueToChange(() => result.current[0]);
+    await waitFor(() => expect(onErrorCallback).toHaveBeenCalled());
 
-    expect(mockedNotification).toHaveBeenCalledWith({
-      variant: 'danger',
-      title: 'Error updating policy',
-      description: undefined,
-    });
+    expect(onSaveCallBack).not.toHaveBeenCalled();
   });
 });

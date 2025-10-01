@@ -1,86 +1,60 @@
 import React from 'react';
 import propTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
-import { Button } from '@patternfly/react-core';
-import { COMPLIANCE_TABLE_DEFAULTS } from '@/constants';
-import { BackgroundLink, emptyRows } from 'PresentationalComponents';
-import { TableToolsTable } from 'Utilities/hooks/useTableTools';
-import useFeature from 'Utilities/hooks/useFeature';
 import columns, { exportableColumns } from './Columns';
 import * as Filters from './Filters';
 
-const DedicatedAction = () => (
-  <div>
-    <BackgroundLink to="/scappolicies/new">
-      <Button variant="primary" ouiaId="CreateNewPolicyButton">
-        Create new policy
-      </Button>
-    </BackgroundLink>
-  </div>
-);
+import { emptyRows } from 'PresentationalComponents/NoResultsTable/NoResultsTable';
+import useActionResolver from './hooks/useActionResolvers';
+import useComplianceTableDefaults from 'Utilities/hooks/useComplianceTableDefaults';
 
-export const PoliciesTable = ({ policies, location, history }) => {
-  const manageColumnsEnabled = useFeature('manageColumns');
+import ComplianceTable from 'PresentationalComponents/ComplianceTable/ComplianceTable';
+
+export const PoliciesTable = ({
+  policies,
+  DedicatedAction,
+  total,
+  loading,
+  options,
+}) => {
+  const complianceTableDefaults = useComplianceTableDefaults();
   const filters = Object.values(Filters);
-
-  const actionResolver = () => [
-    {
-      title: 'Delete policy',
-      onClick: (_event, _index, { itemId: policyId }) => {
-        const policy = policies.find((policy) => policy.id === policyId);
-        history.push(`/scappolicies/${policyId}/delete`, {
-          policy,
-          background: location,
-        });
-      },
-    },
-    {
-      title: 'Edit policy',
-      onClick: (_event, _index, { itemId: policyId }) => {
-        const policy = policies.find((policy) => policy.id === policyId);
-        history.push(`/scappolicies/${policyId}/edit`, {
-          policy,
-          background: location,
-          state: { policy },
-        });
-      },
-    },
-  ];
+  const actionResolver = useActionResolver();
 
   return (
-    <TableToolsTable
+    <ComplianceTable
       aria-label="Policies"
       ouiaId="PoliciesTable"
       className="compliance-policies-table"
       columns={columns}
       items={policies}
-      emptyRows={emptyRows}
       isStickyHeader
       filters={{
         filterConfig: filters,
       }}
+      total={total}
+      loading={loading}
       options={{
-        ...COMPLIANCE_TABLE_DEFAULTS,
-        dedicatedAction: DedicatedAction,
+        ...complianceTableDefaults,
+        actionResolver,
+        ...(DedicatedAction ? { dedicatedAction: DedicatedAction } : {}),
         exportable: {
-          ...COMPLIANCE_TABLE_DEFAULTS.exportable,
+          ...complianceTableDefaults.exportable,
           columns: exportableColumns,
         },
-        manageColumns: manageColumnsEnabled,
+        // TODO replace with empty rows component
+        emptyRows: emptyRows('policies', columns.length),
+        ...options,
       }}
-      actionResolver={actionResolver}
     />
   );
 };
 
 PoliciesTable.propTypes = {
   policies: propTypes.array.isRequired,
-  history: propTypes.object.isRequired,
-  location: propTypes.object.isRequired,
+  DedicatedAction: propTypes.oneOfType([propTypes.node, propTypes.func]),
+  total: propTypes.number,
+  loading: propTypes.bool,
+  options: propTypes.object,
 };
 
-PoliciesTable.defaultProps = {
-  policies: [],
-};
-
-export default withRouter(PoliciesTable);
+export default PoliciesTable;

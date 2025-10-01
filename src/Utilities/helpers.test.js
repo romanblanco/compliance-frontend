@@ -4,10 +4,11 @@ import {
   uniq,
   sortingByProp,
   orderByArray,
+  buildOSObject,
+  capitalizeWord,
+  stringToSentenceCase,
 } from './helpers';
-import items, {
-  severityLevels,
-} from './hooks/useTableTools/__fixtures__/items';
+import items, { severityLevels } from '@/__fixtures__/legacy/items';
 
 describe('uniq', () => {
   it('should deduplicate items', () => {
@@ -84,13 +85,13 @@ describe('orderByArray', () => {
 
   it('sorts an array asc', () => {
     expect(
-      orderByArray(exampleItems, 'severity', severityLevels, 'asc')
+      orderByArray(exampleItems, 'severity', severityLevels, 'asc'),
     ).toMatchSnapshot();
   });
 
   it('sorts an array desc', () => {
     expect(
-      orderByArray(exampleItems, 'severity', severityLevels, 'desc')
+      orderByArray(exampleItems, 'severity', severityLevels, 'desc'),
     ).toMatchSnapshot();
   });
 });
@@ -120,5 +121,39 @@ describe('getPropery', () => {
   it('should return values of keys', () => {
     expect(getProperty(object, 'level1.level2.level3.value')).toMatchSnapshot();
     expect(getProperty(object, 'level1.level2.value')).toMatchSnapshot();
+  });
+});
+
+describe('buildOSObject', () => {
+  const osArray = ['6.9', '7.8'];
+
+  it('should build an array of OS objects', () => {
+    const result = buildOSObject(osArray);
+    expect(result).toEqual([
+      { count: 0, value: { major: '6', minor: '9', name: 'RHEL' } },
+      { count: 0, value: { major: '7', minor: '8', name: 'RHEL' } },
+    ]);
+  });
+
+  it('should ignore invalid input', () => {
+    const result = buildOSObject([...osArray, null, undefined, 7.8]);
+    expect(result).toEqual([
+      { count: 0, value: { major: '6', minor: '9', name: 'RHEL' } },
+      { count: 0, value: { major: '7', minor: '8', name: 'RHEL' } },
+    ]);
+  });
+});
+
+describe('capitalizeWord', () => {
+  it('should capitalize single word', () => {
+    const result = capitalizeWord('foobar');
+    expect(result).toEqual('Foobar');
+  });
+});
+
+describe('stringToSentenceCase', () => {
+  it('should apply sentence case to string', () => {
+    const result = stringToSentenceCase('this Is A Test String');
+    expect(result).toEqual('This is a test string');
   });
 });

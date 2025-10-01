@@ -1,5 +1,6 @@
 import { applyReducerHash } from '@redhat-cloud-services/frontend-components-utilities/ReducerRegistry';
 import { sortingByProp } from 'Utilities/helpers';
+import * as ActionTypes from '../Types';
 
 const selectRows = (rows, selected) =>
   rows.map((row) => ({
@@ -21,11 +22,28 @@ export const entitiesReducer = () =>
       ...state,
       rows: selectRows(state.rows, selected),
     }),
+    [ActionTypes.SET_DISABLED_SYSTEM_SELECTION]: (state, action) => ({
+      ...state,
+      ...(state?.rows
+        ? {
+            rows: state.rows.map((row) => ({
+              ...row,
+              disableSelection: action.payload,
+            })),
+          }
+        : {}),
+    }),
   });
 
-export const mapCountOsMinorVersions = (systems) => {
-  if (!systems) {
-    return {};
+export const mapCountOsMinorVersions = (systems, profile) => {
+  if (!systems || systems.length === 0) {
+    return profile.os_minor_versions.reduce((acc, version) => {
+      acc[version] = {
+        osMinorVersion: version,
+        count: 0,
+      };
+      return acc;
+    }, {});
   }
 
   return systems.reduce((acc, { osMinorVersion }) => {
@@ -40,7 +58,7 @@ export const mapCountOsMinorVersions = (systems) => {
   }, {});
 };
 
-export const countOsMinorVersions = (systems) =>
-  Object.values(mapCountOsMinorVersions(systems)).sort(
-    sortingByProp('osMinorVersion', 'desc')
+export const countOsMinorVersions = (systems, profile) =>
+  Object.values(mapCountOsMinorVersions(systems, profile)).sort(
+    sortingByProp('osMinorVersion', 'desc'),
   );

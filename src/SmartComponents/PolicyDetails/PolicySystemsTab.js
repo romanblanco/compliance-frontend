@@ -1,41 +1,50 @@
-/* eslint-disable react/display-name */
 import React from 'react';
 import propTypes from 'prop-types';
 import { NoSystemsTableWithWarning } from 'PresentationalComponents';
 import { SystemsTable } from 'SmartComponents';
-import { GET_SYSTEMS } from '../SystemsTable/constants';
 import * as Columns from '../SystemsTable/Columns';
+import EditSystemsButtonToolbarItem from './EditSystemsButtonToolbarItem';
+import NoResultsTable from 'PresentationalComponents/NoResultsTable/NoResultsTable';
 
-const PolicySystemsTab = ({ policy }) => (
-  <SystemsTable
-    columns={[
-      Columns.customName({
-        showLink: true,
-      }),
-      Columns.inventoryColumn('tags'),
-      Columns.OS,
-      Columns.SsgVersion,
-    ]}
-    showOsMinorVersionFilter={[policy.majorOsVersion]}
-    query={GET_SYSTEMS}
-    policyId={policy.id}
-    defaultFilter={`policy_id = ${policy.id}`}
-    showActions={false}
-    remediationsEnabled={false}
-    noSystemsTable={
-      policy?.hosts?.length === 0 && <NoSystemsTableWithWarning />
-    }
-    complianceThreshold={policy.complianceThreshold}
-  />
-);
+const PolicySystemsTab = ({ policy }) => {
+  return (
+    <SystemsTable
+      apiEndpoint="policySystems"
+      columns={[
+        Columns.customName(
+          {
+            showLink: true,
+          },
+          { sortBy: ['display_name'] },
+        ),
+        Columns.Tags,
+        Columns.OS(),
+      ]}
+      policyId={policy.id}
+      noSystemsTable={
+        policy?.hosts?.length === 0 || policy?.totalHostCount === 0 ? (
+          <NoSystemsTableWithWarning />
+        ) : (
+          <NoResultsTable kind="systems" />
+        )
+      }
+      complianceThreshold={policy.complianceThreshold}
+      dedicatedAction={<EditSystemsButtonToolbarItem policy={policy} />}
+      ignoreOsMajorVersion
+    />
+  );
+};
 
 PolicySystemsTab.propTypes = {
   policy: propTypes.shape({
     id: propTypes.string.isRequired,
-    complianceThreshold: propTypes.number.isRequired,
-    majorOsVersion: propTypes.string.isRequired,
+    complianceThreshold: propTypes.string.isRequired,
+    osMajorVersion: propTypes.string.isRequired,
     hosts: propTypes.array.isRequired,
+    refId: propTypes.string.isRequired,
+    totalHostCount: propTypes.number,
   }),
+  dedicatedAction: propTypes.object,
   systemTableProps: propTypes.object,
 };
 

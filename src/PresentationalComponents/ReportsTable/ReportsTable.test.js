@@ -1,45 +1,70 @@
-import { policies as rawPolicies } from '@/__fixtures__/policies.js';
+import { render, screen, within } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import TestWrapper from '@/Utilities/TestWrapper';
+import userEvent from '@testing-library/user-event';
+
 import ReportsTable from './ReportsTable';
 import {
   policyNameFilter,
-  policyTypeFilter,
   operatingSystemFilter,
   policyComplianceFilter,
 } from './Filters';
 import { uniq } from 'Utilities/helpers';
-import { filterHelpers } from 'Utilities/hooks/useTableTools/testHelpers.js';
+import { buildReports } from '../../__factories__/reports';
 
-expect.extend(filterHelpers);
-
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  Link: () => 'Mocked Link',
-  useLocation: jest.fn(),
-}));
-
-const profiles = rawPolicies.edges.map((profile) => profile.node);
+const reportsData = buildReports(1);
 
 describe('ReportsTable', () => {
   it('expect to render without error', () => {
-    const wrapper = shallow(<ReportsTable profiles={profiles} />);
+    render(
+      <TestWrapper>
+        <ReportsTable reports={reportsData} />
+      </TestWrapper>,
+    );
 
-    expect(toJson(wrapper)).toMatchSnapshot();
+    expect(
+      screen.getByRole('link', { name: reportsData[0].title }),
+    ).toBeInTheDocument();
   });
 
-  it('expect to have filters properly rendered', () => {
-    const policyTypes = uniq(
-      profiles.map(({ policyType }) => policyType).filter((i) => !!i)
-    );
+  it('expect to have filters properly rendered', async () => {
     const operatingSystems = uniq(
-      profiles.map(({ majorOsVersion }) => majorOsVersion).filter((i) => !!i)
+      reportsData
+        .map(({ os_major_version }) => os_major_version)
+        .filter((i) => !!i),
     );
-    const component = <ReportsTable profiles={profiles} />;
+    const nameLabel = policyNameFilter[0].label;
+    const operatingSystemLabel =
+      operatingSystemFilter(operatingSystems)[0].label;
+    const complianceLabel = policyComplianceFilter[0].label;
 
-    expect(component).toHaveFiltersFor([
-      ...policyNameFilter,
-      ...policyComplianceFilter,
-      ...policyTypeFilter(policyTypes),
-      ...operatingSystemFilter(operatingSystems),
-    ]);
+    render(
+      <TestWrapper>
+        <ReportsTable
+          reports={reportsData}
+          operatingSystems={operatingSystems}
+        />
+      </TestWrapper>,
+    );
+
+    const toggleButton = await screen.findByRole('button', {
+      name: 'Conditional filter toggle',
+    });
+    expect(toggleButton).toHaveTextContent(nameLabel);
+
+    const nonDefaultfiltersToCheck = [operatingSystemLabel, complianceLabel];
+    nonDefaultfiltersToCheck.forEach(async (filterLabel) => {
+      await userEvent.click(toggleButton);
+      const filterList = await screen.findByRole('menu', {
+        name: 'Conditional filters list',
+      });
+      expect(filterList).toBeInTheDocument();
+
+      const osFilterItem = within(filterList).getByText(filterLabel);
+      expect(osFilterItem).toBeInTheDocument();
+      await userEvent.click(osFilterItem);
+
+      expect(toggleButton).toHaveTextContent(operatingSystemLabel);
+    });
   });
 });

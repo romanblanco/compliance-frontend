@@ -1,16 +1,17 @@
+import React from 'react';
 import {
-  HIGH_SEVERITY,
-  MEDIUM_SEVERITY,
-  LOW_SEVERITY,
-  UNKNOWN_SEVERITY,
-} from './Constants';
+  HighSeverity,
+  MediumSeverity,
+  LowSeverity,
+  UnknownSeverity,
+} from './components/SeverityIcons';
 import { conditionalFilterType } from '@redhat-cloud-services/frontend-components/ConditionalFilter';
 
 const filterRulesWithAllValues = (rules, values, valueCheck) =>
   rules.filter(
     (rule) =>
       values.map((value) => valueCheck(rule, value)).filter((v) => !!v).length >
-      0
+      0,
   );
 
 const anyFilterApply = (rules, values, valueCheck) => {
@@ -30,47 +31,43 @@ const BASE_FILTER_CONFIGURATION = [
   {
     type: conditionalFilterType.text,
     label: 'Name',
-    filter: (rules, value) =>
-      filterRulesWithAllValues(
-        rules,
-        [value],
-        (rule, value) =>
-          rule.title.toLowerCase().includes(value.toLowerCase()) ||
-          (rule.identifier &&
-            rule.identifier.label
-              .toLowerCase()
-              .includes(value.toLowerCase())) ||
-          rule.references.filter((reference) =>
-            reference.label.toLowerCase().includes(value.toLowerCase())
-          ).length > 0
-      ),
+    filterSerialiser: (_, value) =>
+      `(title ~ "${value}" OR identifier_label ~ "${value}")`,
   },
   {
     type: conditionalFilterType.checkbox,
     label: 'Severity',
+    filterAttribute: 'severity',
     items: [
-      { label: HIGH_SEVERITY, value: 'high' },
-      { label: MEDIUM_SEVERITY, value: 'medium' },
-      { label: LOW_SEVERITY, value: 'low' },
-      { label: UNKNOWN_SEVERITY, value: 'unknown' },
+      { label: <HighSeverity />, value: 'high' },
+      { label: <MediumSeverity />, value: 'medium' },
+      { label: <LowSeverity />, value: 'low' },
+      { label: <UnknownSeverity />, value: 'unknown' },
     ],
-    filter: (rules, values) =>
-      anyFilterApply(rules, values, (rule, value) => rule.severity === value),
   },
 ];
 
-const PASS_FILTER_CONFIG = {
+const RULE_STATE_REST_SERIALISER = {
+  passed: 'pass',
+  failed: 'fail',
+};
+
+const RULE_STATE_FILTER_CONFIG = {
   type: conditionalFilterType.checkbox,
-  label: 'Passed',
+  label: 'Rule state',
   items: [
     { label: 'Passed rules', value: 'passed' },
     { label: 'Failed rules', value: 'failed' },
   ],
+  filterSerialiser: (_filterConfig, values) =>
+    `(${values
+      .map((value) => `result = ${RULE_STATE_REST_SERIALISER[value]}`)
+      .join(' OR ')})`,
   filter: (rules, values) =>
     anyFilterApply(
       rules,
       values,
-      (rule, value) => rule.compliant === (value === 'passed')
+      (rule, value) => rule.compliant === (value === 'passed'),
     ),
 };
 
@@ -82,7 +79,7 @@ export const policiesFilterConfig = (policies) => ({
     filterRulesWithAllValues(
       rules,
       values,
-      (rule, value) => rule.profile.id === value
+      (rule, value) => rule.profile.id === value,
     ),
 });
 
@@ -93,23 +90,21 @@ export const ANSIBLE_SUPPORT_FILTER_CONFIG = {
     { label: 'Ansible remediation support', value: 'true' },
     { label: 'No Ansible remediation support', value: 'false' },
   ],
-  filter: (rules, values) =>
-    anyFilterApply(
-      rules,
-      values,
-      (rule, value) => rule.remediationAvailable === (value === 'true')
-    ),
+  filterSerialiser: (_filterConfig, values) =>
+    `(${values
+      .map((value) => `remediation_available = ${value}`)
+      .join(' OR ')})`,
 };
 
 const buildFilterConfig = ({
-  showPassFailFilter,
+  showRuleStateFilter,
   policies,
   ansibleSupportFilter,
 }) => {
   const config = [...BASE_FILTER_CONFIGURATION];
 
-  if (showPassFailFilter) {
-    config.push(PASS_FILTER_CONFIG);
+  if (showRuleStateFilter) {
+    config.push(RULE_STATE_FILTER_CONFIG);
   }
 
   if (policies && policies.length > 1) {

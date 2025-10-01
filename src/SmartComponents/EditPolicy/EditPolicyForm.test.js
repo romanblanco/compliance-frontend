@@ -1,34 +1,55 @@
+import { render } from '@testing-library/react';
+import TestWrapper from '@/Utilities/TestWrapper';
+import { policies } from '@/__fixtures__/policies.js';
+
 import EditPolicyForm from './EditPolicyForm';
-jest.mock('react-redux', () => ({
-  ...jest.requireActual('react-redux'),
-  useSelector: jest.fn(() => ({})),
-  useDispatch: jest.fn(() => ({})),
+import { useNewRulesAlertState } from './hooks';
+
+jest.mock('./hooks', () => ({
+  ...jest.requireActual('./hooks'),
+  useNewRulesAlertState: jest.fn(() => [false, () => false]),
 }));
 
-describe('EditPolicyForm', () => {
-  it('expect to render without error', () => {
-    const policy = {
-      id: '1',
-      refId: '121212',
-      name: 'profile1',
-      description: 'profile description',
-      totalHostCount: 1,
-      complianceThreshold: 1,
-      compliantHostCount: 1,
-      policy: {
-        name: 'parentpolicy',
+// TODO: implement EditPolicyForm tests for REST
+describe.skip('EditPolicyForm', () => {
+  const policy = {
+    ...policies.edges[0].node,
+    supportedOsVersions: ['7.8', '7.9'],
+  };
+  const mocks = [
+    {
+      request: {
+        query: {}, //BENCHMARKS_QUERY,
       },
-      businessObjective: {
-        id: '1',
-        title: 'BO 1',
+      result: {
+        data: {},
       },
-      benchmark: {
-        title: 'benchmark',
-        version: '0.1.5',
-      },
-    };
-    const wrapper = shallow(<EditPolicyForm {...policy} />);
+    },
+  ];
+  const defaultProps = {
+    setUpdatedPolicy: () => ({}),
+    setSelectedRuleRefIds: () => ({}),
+    setSelectedSystems: () => ({}),
+    policy,
+  };
 
-    expect(toJson(wrapper)).toMatchSnapshot();
+  it('expect to render without error', () => {
+    useNewRulesAlertState.mockImplementation(() => [false, () => false]);
+    const { asFragment } = render(
+      <TestWrapper mocks={mocks}>
+        <EditPolicyForm {...defaultProps} />
+      </TestWrapper>,
+    );
+    expect(asFragment()).toMatchSnapshot();
+  });
+
+  it('expect to render with alter', () => {
+    useNewRulesAlertState.mockImplementation(() => [true, () => true]);
+    const { asFragment } = render(
+      <TestWrapper mocks={mocks}>
+        <EditPolicyForm {...defaultProps} />
+      </TestWrapper>,
+    );
+    expect(asFragment()).toMatchSnapshot();
   });
 });

@@ -1,147 +1,84 @@
-/* eslint-disable react/display-name */
-import React from 'react';
-import black300 from '@patternfly/react-tokens/dist/esm/global_palette_black_300';
-import blue200 from '@patternfly/react-tokens/dist/esm/chart_color_blue_200';
-import blue300 from '@patternfly/react-tokens/dist/esm/chart_color_blue_300';
+import React, { useState } from 'react';
 import propTypes from 'prop-types';
 import { useParams } from 'react-router-dom';
-import { useQuery } from '@apollo/client';
-import gql from 'graphql-tag';
-import { ChartDonut, ChartThemeVariant } from '@patternfly/react-charts';
 import {
   Breadcrumb,
   BreadcrumbItem,
-  Button,
+  EmptyState,
   Grid,
   GridItem,
-  Text,
+  Spinner,
+  Tab,
+  Tabs,
 } from '@patternfly/react-core';
 import PageHeader, {
   PageHeaderTitle,
 } from '@redhat-cloud-services/frontend-components/PageHeader';
-import Main from '@redhat-cloud-services/frontend-components/Main';
-import EmptyTable from '@redhat-cloud-services/frontend-components/EmptyTable';
-import Spinner from '@redhat-cloud-services/frontend-components/Spinner';
-import { fixedPercentage, pluralize } from 'Utilities/TextHelper';
+
 import {
-  BackgroundLink,
+  LinkWithPermission as Link,
   BreadcrumbLinkItem,
   ReportDetailsContentLoader,
   ReportDetailsDescription,
   StateViewWithError,
   StateViewPart,
-  UnsupportedSSGVersion,
   SubPageTitle,
+  LinkButton,
 } from 'PresentationalComponents';
-import { useTitleEntity } from 'Utilities/hooks/useDocumentTitle';
-import useFeature from 'Utilities/hooks/useFeature';
 import { SystemsTable } from 'SmartComponents';
+import { useTitleEntity } from 'Utilities/hooks/useDocumentTitle';
+import useReport from 'Utilities/hooks/api/useReport';
+import useReportTestResultsSG from 'Utilities/hooks/api/useReportTestResultsSG';
+
 import '@/Charts.scss';
 import './ReportDetails.scss';
-import { GET_SYSTEMS } from '../SystemsTable/constants';
-import * as Columns from '../SystemsTable/Columns';
-import { default as ReportDetailsWithNotReportedSystems } from './ReportDetailsWithNotReportedSystems';
+import TabTitleWithData from './Components/TabTitleWithData';
+import ReportChart from './Components/ReportChart';
+import {
+  neverReportedSystemsTableColumns,
+  reportedSystemTableColumns,
+} from './constants';
 
-export const QUERY = gql`
-  query Profile($policyId: String!) {
-    profile(id: $policyId) {
-      id
-      name
-      refId
-      testResultHostCount
-      compliantHostCount
-      unsupportedHostCount
-      complianceThreshold
-      majorOsVersion
-      lastScanned
-      policyType
-      policy {
-        id
-        name
-      }
-      benchmark {
-        id
-        version
-      }
-      businessObjective {
-        id
-        title
-      }
-    }
-  }
-`;
-
-export const ReportDetails = ({ route }) => {
-  const { report_id: policyId } = useParams();
-  const pdfReportEnabled = useFeature('pdfReport');
-  const { data, error, loading } = useQuery(QUERY, {
-    variables: { policyId },
-    fetchPolicy: 'no-cache',
+const ReportDetails = ({ route }) => {
+  const { report_id } = useParams();
+  const {
+    data: { data: report } = {},
+    error,
+    loading,
+  } = useReport({ params: { reportId: report_id } });
+  const { data: { data: ssgVersions } = {} } = useReportTestResultsSG({
+    params: { reportId: report_id },
+    skip: !report,
   });
-  let donutValues = [];
-  let donutId = 'loading-donut';
-  let chartColorScale;
-  let profile = {};
-  let policyName;
-  let legendData;
-  let compliancePercentage;
+  let reportTitle;
   let pageTitle;
 
-  if (!loading && data) {
-    profile = data.profile;
-    policyName = profile.policy.name;
-    pageTitle = `Report: ${policyName}`;
-    const compliantHostCount = profile.compliantHostCount;
-    const testResultHostCount = profile.testResultHostCount;
-    donutId = profile.name.replace(/ /g, '');
-    donutValues = [
-      { x: 'Compliant', y: testResultHostCount ? compliantHostCount : '0' },
-      { x: 'Non-compliant', y: testResultHostCount - compliantHostCount },
-    ];
-    chartColorScale = (testResultHostCount === 0 && [black300.value]) || [
-      blue300.value,
-      blue200.value,
-    ];
-    legendData = [
-      {
-        name:
-          donutValues[0].y +
-          ' ' +
-          pluralize(donutValues[0].y, 'system') +
-          ' compliant',
-      },
-      {
-        name:
-          donutValues[1].y +
-          ' ' +
-          pluralize(donutValues[1].y, 'system') +
-          ' non-compliant',
-      },
-    ];
-    compliancePercentage = testResultHostCount
-      ? fixedPercentage(
-          Math.floor(
-            100 * (donutValues[0].y / (donutValues[0].y + donutValues[1].y))
-          )
-        )
-      : 0;
+  if (!loading && report) {
+    reportTitle = report.title;
+    pageTitle = `Report: ${reportTitle}`;
   }
 
-  useTitleEntity(route, policyName);
+  useTitleEntity(route, reportTitle);
+
+  const [tab, setTab] = useState('reporting');
+
+  const handleTabSelect = (_, eventKey) => setTab(eventKey);
 
   return (
-    <StateViewWithError stateValues={{ error, data, loading }}>
+    <StateViewWithError
+      stateValues={{ error, report: report && !loading, loading }}
+    >
       <StateViewPart stateKey="loading">
         <PageHeader>
           <ReportDetailsContentLoader />
         </PageHeader>
-        <Main>
-          <EmptyTable>
+        <section className="pf-v6-c-page__main-section">
+          <EmptyState>
             <Spinner />
-          </EmptyTable>
-        </Main>
+          </EmptyState>
+        </section>
       </StateViewPart>
-      <StateViewPart stateKey="data">
+      <StateViewPart stateKey="report">
         <PageHeader>
           <Breadcrumb ouiaId="ReportDetailsPathBreadcrumb">
             <BreadcrumbLinkItem to="/">Compliance</BreadcrumbLinkItem>
@@ -151,7 +88,7 @@ export const ReportDetails = ({ route }) => {
           <Grid hasGutter>
             <GridItem sm={9} md={9} lg={9} xl={9}>
               <PageHeaderTitle title={pageTitle} />
-              <SubPageTitle>{profile.policyType}</SubPageTitle>
+              <SubPageTitle>{report?.profile_title}</SubPageTitle>
             </GridItem>
             <GridItem
               className="report-details-button"
@@ -160,118 +97,125 @@ export const ReportDetails = ({ route }) => {
               lg={3}
               xl={3}
             >
-              {pdfReportEnabled && (
-                <BackgroundLink
-                  state={{ profile }}
-                  to={`/reports/${profile.id}/pdf`}
-                >
-                  <Button
-                    ouiaId="ReportDetailsDownloadReportPDFLink"
-                    variant="primary"
-                    className="pf-u-mr-md"
-                  >
-                    Download PDF
-                  </Button>
-                </BackgroundLink>
-              )}
-              <BackgroundLink
-                state={{ profile }}
-                to={`/reports/${profile.id}/delete`}
+              <Link
+                state={{ report }}
+                to={`/reports/${report?.id}/pdf`}
+                className="pf-v6-u-mr-md"
+                Component={LinkButton}
+                componentProps={{
+                  variant: 'primary',
+                  ouiaId: 'ReportDetailsDownloadReportPDFLink',
+                }}
               >
-                <Button
-                  variant="link"
-                  ouiaId="ReportDetailsDeleteReportLink"
-                  isInline
-                >
-                  Delete report
-                </Button>
-              </BackgroundLink>
+                Download PDF
+              </Link>
+              <Link
+                state={{ report }}
+                to={`/reports/${report?.id}/delete`}
+                Component={LinkButton}
+                componentProps={{
+                  isInline: true,
+                  variant: 'link',
+                  ouiaId: 'ReportDetailsDeleteReportLink',
+                }}
+              >
+                Delete report
+              </Link>
             </GridItem>
           </Grid>
           <Grid hasGutter>
             <GridItem sm={12} md={12} lg={12} xl={6}>
-              <div className="chart-inline">
-                <div className="chart-container">
-                  <ChartDonut
-                    data={donutValues}
-                    identifier={donutId}
-                    title={compliancePercentage}
-                    subTitle="Compliant"
-                    themeVariant={ChartThemeVariant.light}
-                    colorScale={chartColorScale}
-                    style={{ fontSize: 20 }}
-                    constrainToVisibleArea={true}
-                    innerRadius={88}
-                    width={462}
-                    legendPosition="right"
-                    legendData={legendData}
-                    legendOrientation="vertical"
-                    padding={{
-                      bottom: 20,
-                      left: 0,
-                      right: 250,
-                      top: 20,
-                    }}
-                  />
-                </div>
-              </div>
-              {profile.unsupportedHostCount > 0 && (
-                <Text>
-                  <UnsupportedSSGVersion showHelpIcon>
-                    <strong className="ins-c-warning-text">
-                      {profile.unsupportedHostCount} systems not supported
-                    </strong>
-                  </UnsupportedSSGVersion>
-                </Text>
-              )}
+              <ReportChart
+                report={report}
+                hasLegend={true}
+                chartClass="report-details-chart-container"
+              />
             </GridItem>
             <GridItem sm={12} md={12} lg={12} xl={6}>
-              <ReportDetailsDescription profile={profile} />
+              <ReportDetailsDescription report={report} />
             </GridItem>
           </Grid>
         </PageHeader>
-        <Main>
+        <section className="pf-v6-c-page__main-section">
           <Grid hasGutter>
             <GridItem span={12}>
-              <SystemsTable
-                showOsMinorVersionFilter={[profile.majorOsVersion]}
-                columns={[
-                  Columns.customName({
-                    showLink: true,
-                    showOsInfo: true,
-                  }),
-                  Columns.inventoryColumn('tags'),
-                  Columns.SsgVersion,
-                  Columns.FailedRules,
-                  Columns.ComplianceScore,
-                  Columns.LastScanned,
-                ]}
-                query={GET_SYSTEMS}
-                showOnlySystemsWithTestResults
-                compliantFilter
-                defaultFilter={`with_results_for_policy_id = ${profile.id}`}
-                policyId={profile.id}
-              />
+              <Tabs
+                className="pf-m-light pf-v6-c-table"
+                activeKey={tab}
+                onSelect={handleTabSelect}
+                mountOnEnter
+                unmountOnExit
+              >
+                <Tab
+                  key={'reporting'}
+                  eventKey={'reporting'}
+                  ouiaId="Reporting"
+                  title={
+                    <TabTitleWithData
+                      text="Reporting"
+                      data={report?.reported_system_count}
+                      isLoading={loading}
+                      color="blue"
+                    />
+                  }
+                >
+                  <SystemsTable
+                    isFullView
+                    remediationsEnabled
+                    apiEndpoint="reportTestResults"
+                    ignoreOsMajorVersion
+                    reportId={report_id}
+                    filters={{
+                      ssgVersions,
+                      compliant: true,
+                      severity: true,
+                      groups: true,
+                    }}
+                    columns={reportedSystemTableColumns}
+                  />
+                </Tab>
+
+                <Tab
+                  key={'never-reported'}
+                  eventKey={'never-reported'}
+                  ouiaId="Never reported"
+                  title={
+                    <TabTitleWithData
+                      text="Never reported"
+                      data={
+                        report?.assigned_system_count -
+                        report?.reported_system_count
+                      }
+                      isLoading={loading}
+                    />
+                  }
+                >
+                  <SystemsTable
+                    apiEndpoint="reportSystems"
+                    isFullView
+                    columns={neverReportedSystemsTableColumns}
+                    defaultFilter={'never_reported = true'}
+                    ignoreOsMajorVersion
+                    filters={{
+                      groups: true,
+                    }}
+                    reportId={report_id}
+                  />
+                </Tab>
+              </Tabs>
             </GridItem>
           </Grid>
-        </Main>
+        </section>
       </StateViewPart>
     </StateViewWithError>
   );
 };
 
 ReportDetails.propTypes = {
-  route: propTypes.object,
+  route: propTypes.shape({
+    title: propTypes.string.isRequired,
+    defaultTitle: propTypes.string.isRequired,
+  }).isRequired,
 };
 
-const ReportDetailsFeatureWrapper = (props) => {
-  const systemsNotReporting = useFeature('systemsNotReporting');
-
-  return systemsNotReporting ? (
-    <ReportDetailsWithNotReportedSystems {...props} />
-  ) : (
-    <ReportDetails {...props} />
-  );
-};
-
-export default ReportDetailsFeatureWrapper;
+export default ReportDetails;

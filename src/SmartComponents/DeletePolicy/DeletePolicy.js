@@ -1,56 +1,56 @@
-import { Button, Checkbox, ModalVariant, Text } from '@patternfly/react-core';
-import { ExclamationTriangleIcon } from '@patternfly/react-icons';
-import propTypes from 'prop-types';
 import React, { useState } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
-import { useMutation } from '@apollo/client';
-import { DELETE_PROFILE } from 'Mutations';
-import { addNotification } from '@redhat-cloud-services/frontend-components-notifications/redux';
-import { ComplianceModal } from 'PresentationalComponents';
-import { dispatchAction } from 'Utilities/Dispatcher';
+import propTypes from 'prop-types';
+import { useParams } from 'react-router-dom';
+import { Button, Checkbox, Content, Spinner } from '@patternfly/react-core';
+import { ModalVariant } from '@patternfly/react-core/deprecated';
+import useNavigate from '@redhat-cloud-services/frontend-components-utilities/useInsightsNavigate';
+import { useAddNotification } from '@redhat-cloud-services/frontend-components-notifications/hooks';
+import {
+  ComplianceModal,
+  StateViewWithError,
+  StateViewPart,
+} from 'PresentationalComponents';
+import usePolicy from 'Utilities/hooks/api/usePolicy';
+import { apiInstance } from 'Utilities/hooks/useQuery';
 
 const DeletePolicy = () => {
+  const addNotification = useAddNotification();
   const [deleteEnabled, setDeleteEnabled] = useState(false);
-  const location = useLocation();
-  const history = useHistory();
-  const { name, id } = location.state.policy;
+  const { policy_id: policyId } = useParams();
+  const navigate = useNavigate();
   const onClose = () => {
-    history.push('/scappolicies');
+    navigate('/scappolicies');
   };
 
-  const [deletePolicy] = useMutation(DELETE_PROFILE, {
-    onCompleted: () => {
-      dispatchAction(
-        addNotification({
-          variant: 'success',
-          title: `Deleted "${name}" and its associated reports`,
-        })
-      );
+  const {
+    data: { data: policy } = {},
+    loading: loading,
+    error: error,
+  } = usePolicy({ params: { policyId } });
+
+  const deletePolicy = async (id) => {
+    try {
+      await apiInstance.deletePolicy(id);
+      addNotification({
+        variant: 'success',
+        title: `Deleted "${policy?.title}" and its associated reports`,
+      });
       onClose();
-    },
-    onError: (error) => {
-      dispatchAction(
-        addNotification({
-          variant: 'danger',
-          title: 'Error removing policy',
-          description: error.message,
-        })
-      );
+    } catch (e) {
+      addNotification({
+        variant: 'danger',
+        title: 'Error removing policy',
+        description: e?.message,
+      });
       onClose();
-    },
-  });
+    }
+  };
 
   return (
     <ComplianceModal
       variant={ModalVariant.small}
-      title={
-        <React.Fragment>
-          <ExclamationTriangleIcon className="ins-u-warning" />
-          <Text component="span" className="policy-delete-header-text">
-            Delete policy?
-          </Text>
-        </React.Fragment>
-      }
+      title="Delete policy?"
+      titleIconVariant="warning"
       ouiaId="DeletePolicyModal"
       isOpen
       onClose={onClose}
@@ -61,7 +61,7 @@ const DeletePolicy = () => {
           aria-label="delete"
           isDisabled={!deleteEnabled}
           variant="danger"
-          onClick={() => deletePolicy({ variables: { input: { id } } })}
+          onClick={() => deletePolicy(policy?.id)}
         >
           Delete policy and associated reports
         </Button>,
@@ -75,22 +75,30 @@ const DeletePolicy = () => {
         </Button>,
       ]}
     >
-      <Text className="policy-delete-body-text">
-        Deleting the policy <b>{name}</b> will also delete its associated
-        reports.
-      </Text>
-      <Checkbox
-        label="I understand this will delete the policy and all associated reports"
-        id={`deleting-policy-check-${id}`}
-        isChecked={deleteEnabled}
-        onChange={setDeleteEnabled}
-      />
+      <StateViewWithError stateValues={{ error, data: policy, loading }}>
+        <StateViewPart stateKey="loading">
+          <Spinner />
+        </StateViewPart>
+        <StateViewPart stateKey="data">
+          <Content component="p" className="policy-delete-body-text">
+            Deleting the policy <b>{policy?.title}</b> will also delete its
+            associated reports.
+          </Content>
+          <Checkbox
+            label="I understand this will delete the policy and all associated reports"
+            id={`deleting-policy-check-${policy?.id}`}
+            isChecked={deleteEnabled}
+            onChange={(_, v) => setDeleteEnabled(v)}
+          />
+        </StateViewPart>
+      </StateViewWithError>
     </ComplianceModal>
   );
 };
 
 DeletePolicy.propTypes = {
-  policy: propTypes.object,
+  policyId: propTypes.string,
+  onClose: propTypes.func,
 };
 
 export default DeletePolicy;

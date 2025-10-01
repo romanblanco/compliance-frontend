@@ -1,28 +1,46 @@
+import propTypes from 'prop-types';
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import { reduxForm } from 'redux-form';
+import TestWrapper from '@/Utilities/TestWrapper';
+
 import { ProfileThresholdField } from './ProfileThresholdField';
 
+const Form = reduxForm({
+  form: 'policyForm',
+})(({ children }) => children);
+
+const FormTestWrapper = ({ children }) => (
+  <TestWrapper>
+    <Form>{children}</Form>
+  </TestWrapper>
+);
+FormTestWrapper.propTypes = {
+  children: propTypes.node,
+};
+
 describe('ProfileThresholdField', () => {
-  const defaultProps = {
-    previousThreshold: 10,
-  };
+  it('expect to render a threshold without error', () => {
+    const threshold = 10;
+    render(
+      <FormTestWrapper>
+        <ProfileThresholdField previousThreshold={threshold} />
+      </FormTestWrapper>,
+    );
 
-  it('expect to render without error', () => {
-    const wrapper = shallow(<ProfileThresholdField {...defaultProps} />);
-
-    expect(toJson(wrapper)).toMatchSnapshot();
+    expect(screen.getByLabelText('compliance threshold')).toBeInTheDocument();
   });
 
-  it('expect to handle ThresholdChange', () => {
-    const wrapper = shallow(<ProfileThresholdField {...defaultProps} />);
-    const instance = wrapper.instance();
+  it('expect to render a validation error', () => {
+    render(
+      <FormTestWrapper>
+        <ProfileThresholdField previousThreshold={120} />
+      </FormTestWrapper>,
+    );
 
-    instance.handleThresholdChange(100);
-    expect(wrapper.state()).toMatchSnapshot();
-
-    instance.handleThresholdChange(50);
-    expect(wrapper.state()).toMatchSnapshot();
-
-    instance.handleThresholdChange(0);
-    instance.handleThresholdChange(-10);
-    expect(wrapper.state()).toMatchSnapshot();
+    expect(screen.getByLabelText('compliance threshold')).toHaveAttribute(
+      'aria-invalid',
+      'true',
+    );
   });
 });

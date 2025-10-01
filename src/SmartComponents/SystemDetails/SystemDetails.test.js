@@ -1,19 +1,15 @@
-import { useQuery } from '@apollo/client';
-import { useLocation } from 'react-router-dom';
-import { SystemDetails } from './SystemDetails.js';
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import TestWrapper from '@/Utilities/TestWrapper';
 
-jest.mock('SmartComponents', () => ({
-  InventoryDetails: () => 'MockedInventoryDetails',
-}));
-
-jest.mock('@apollo/client');
+import SystemDetails from './SystemDetails.js';
+import useSystem from 'Utilities/hooks/api/useSystem';
 
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
-  useHistory: jest.fn(),
   useLocation: jest.fn(),
   useParams: jest.fn(() => ({
-    inventoryId: 1,
+    inventoryId: '1',
   })),
 }));
 
@@ -22,56 +18,26 @@ jest.mock('Utilities/hooks/useDocumentTitle', () => ({
   setTitle: () => ({}),
 }));
 
+jest.mock('Utilities/hooks/api/useSystem', () => jest.fn());
+
 describe('SystemDetails', () => {
-  const defaultLocation = {
-    query: {
-      hidePassed: false,
-    },
-  };
-  const data = {
-    system: {
-      name: 'test.host.local',
-    },
-  };
-  const defaultQuery = {
-    data,
-    error: false,
-    loading: false,
-  };
+  it('expect to render Inventory Details Wrapper', () => {
+    useSystem.mockImplementation(() => ({
+      data: {
+        data: { display_name: 'foo', policies: [{}], insights_id: '123' },
+      },
+      error: undefined,
+      loading: undefined,
+    }));
+    render(
+      <TestWrapper>
+        <SystemDetails route={{}} />
+      </TestWrapper>,
+    );
 
-  beforeEach(() => {
-    useLocation.mockImplementation(jest.fn(() => defaultLocation));
-    useQuery.mockImplementation(() => defaultQuery);
-  });
-
-  it('expect to render without error', () => {
-    const wrapper = shallow(<SystemDetails />);
-
-    expect(toJson(wrapper)).toMatchSnapshot();
-  });
-
-  it('expect to render loading', () => {
-    useQuery.mockImplementation(() => ({ ...defaultQuery, loading: true }));
-    const wrapper = shallow(<SystemDetails />);
-
-    expect(toJson(wrapper)).toMatchSnapshot();
-  });
-
-  it('expect to render and pass hidePassed correctly', () => {
-    useLocation.mockImplementation(() => ({ query: { hidePassed: true } }));
-    const wrapper = shallow(<SystemDetails />);
-
-    expect(toJson(wrapper)).toMatchSnapshot();
-  });
-
-  it('expect to render a 500 error', () => {
-    const error = {
-      networkError: { statusCode: 500 },
-      error: 'Test Error loading',
-    };
-    useQuery.mockImplementation(() => ({ ...defaultQuery, error }));
-    const wrapper = shallow(<SystemDetails />);
-
-    expect(toJson(wrapper)).toMatchSnapshot();
+    expect(
+      screen.getByLabelText('Inventory Details Wrapper'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
   });
 });

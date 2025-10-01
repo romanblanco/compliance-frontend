@@ -2,67 +2,38 @@ import { render } from '@testing-library/react';
 import ReportChart from './ReportChart';
 
 describe('ReportChart', () => {
-  const defaultProps = {
-    profile: {
-      name: 'TEST Profile name',
-      compliantHostCount: 0,
-      testResultHostCount: 0,
-      unsupportedHostCount: 0,
-      totalHostCount: 0,
-    },
-  };
-
-  it('expect to render without error with no profile', () => {
+  it('expect to render without error with zero counts', () => {
     const component = <ReportChart />;
     const { container } = render(component);
 
     expect(container).toMatchSnapshot();
   });
 
-  it('expect to render without error with zero counts', () => {
-    const component = <ReportChart {...defaultProps} />;
+  it('expect to render with 2 unsupported & 3 never reported hosts', () => {
+    const reportData = {
+      assigned_system_count: 10,
+      reported_system_count: 7,
+      unsupported_system_count: 2,
+      compliant_system_count: 4,
+      percent_compliant: 40,
+    };
+
+    const component = <ReportChart report={reportData} />;
     const { container } = render(component);
 
     expect(container).toMatchSnapshot();
   });
 
-  it('expect to render with zero unsupported hosts', () => {
-    const props = {
-      ...defaultProps,
-      compliantHostCount: 5,
-      testResultHostCount: 5,
-      unsupportedHostCount: 0,
-      totalHostCount: 5,
+  it('expect to render with 0 unsupported & 0 never reported hosts', () => {
+    const reportData = {
+      assigned_system_count: 5,
+      reported_system_count: 5,
+      unsupported_system_count: 0,
+      compliant_system_count: 4,
+      percent_compliant: 80,
     };
-    const component = <ReportChart {...props} />;
-    const { container } = render(component);
 
-    expect(container).toMatchSnapshot();
-  });
-
-  it('expect to render with unsupported hosts', () => {
-    const props = {
-      ...defaultProps,
-      compliantHostCount: 5,
-      testResultHostCount: 5,
-      unsupportedHostCount: 2,
-      totalHostCount: 5,
-    };
-    const component = <ReportChart {...props} />;
-    const { container } = render(component);
-
-    expect(container).toMatchSnapshot();
-  });
-
-  it('expect to render with not reporting hosts', () => {
-    const props = {
-      ...defaultProps,
-      compliantHostCount: 5,
-      testResultHostCount: 2,
-      unsupportedHostCount: 0,
-      totalHostCount: 10,
-    };
-    const component = <ReportChart {...props} />;
+    const component = <ReportChart report={reportData} />;
     const { container } = render(component);
 
     expect(container).toMatchSnapshot();

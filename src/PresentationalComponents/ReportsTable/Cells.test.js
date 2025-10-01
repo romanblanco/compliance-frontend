@@ -1,80 +1,82 @@
-import { Name, OperatingSystem, CompliantSystems } from './Cells';
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import TestWrapper from '@/Utilities/TestWrapper';
 
-describe('Name', () => {
-  it('expect to render without error', () => {
-    const wrapper = shallow(
-      <Name
-        {...{
-          id: 'ID',
-          name: 'NAME',
-          policyType: 'POLICY_TYPE',
-          policy: {
-            id: 'POLICY_ID',
-            name: 'POLICY_NAME',
-          },
-        }}
-      />
+import {
+  Name,
+  OperatingSystem,
+  CompliantSystems,
+  PDFExportDownload,
+} from './Cells';
+
+describe('ReportsTable Cells', () => {
+  it('expect to render Name cell', () => {
+    const defaultProps = {
+      id: '123',
+      title: 'Foo',
+      profile_title: 'Foo profile title',
+      compliance_threshold: 50,
+      os_major_version: 8,
+      business_objective: 'foo',
+    };
+
+    render(
+      <TestWrapper>
+        <Name {...defaultProps} />
+      </TestWrapper>,
     );
 
-    expect(toJson(wrapper)).toMatchSnapshot();
-  });
-});
-
-describe('OperatingSystem', () => {
-  const defaultProps = {
-    majorOsVersion: '7',
-  };
-
-  it('expect to render without error', () => {
-    const wrapper = shallow(<OperatingSystem {...defaultProps} />);
-
-    expect(toJson(wrapper)).toMatchSnapshot();
+    expect(screen.getByText(defaultProps.title)).toBeInTheDocument();
+    const link = screen.getByRole('link', { name: defaultProps.title });
+    expect(link).toHaveAttribute(
+      'href',
+      expect.stringContaining(`/reports/${defaultProps.id}`),
+    );
   });
 
-  it('expect to render with SSG version', () => {
-    const wrapper = shallow(
-      <OperatingSystem
-        {...defaultProps}
-        ssgVersion="1.2.3"
-        policy={null}
-        unsupportedHostCount={0}
-      />
+  it('expect to render OperatingSystem cell', () => {
+    const defaultProps = {
+      os_major_version: '7',
+    };
+
+    render(
+      <TestWrapper>
+        <OperatingSystem {...defaultProps} />
+      </TestWrapper>,
+    );
+    expect(
+      screen.getByText(`RHEL ${defaultProps.os_major_version}`),
+    ).toBeInTheDocument();
+  });
+
+  it('expect to render CompliantSystems cell', () => {
+    const defaultProps = {
+      assigned_system_count: 10,
+      reported_system_count: 7,
+      unsupported_system_count: 2,
+      compliant_system_count: 4,
+      percent_compliant: 40,
+    };
+
+    render(
+      <TestWrapper>
+        <CompliantSystems {...defaultProps} />
+      </TestWrapper>,
     );
 
-    expect(toJson(wrapper)).toMatchSnapshot();
+    expect(screen.getByLabelText('Report chart')).toBeInTheDocument();
+    expect(screen.getByText('40%')).toBeInTheDocument();
   });
 
-  it('expect to render with unsupported warning', () => {
-    const wrapper = shallow(
-      <OperatingSystem
-        {...defaultProps}
-        ssgVersion="1.2.3"
-        unsupportedHostCount={3}
-        policy={null}
-      />
+  it('expect to render PDFExportDownload cell', () => {
+    render(
+      <TestWrapper>
+        <PDFExportDownload id="123" />
+      </TestWrapper>,
     );
 
-    expect(toJson(wrapper)).toMatchSnapshot();
-  });
-});
-
-describe('CompliantSystems', () => {
-  const deftaultProps = {
-    testResultHostCount: 10,
-    compliantHostCount: 9,
-  };
-
-  it('expect to render without error', () => {
-    const wrapper = shallow(<CompliantSystems {...deftaultProps} />);
-
-    expect(toJson(wrapper)).toMatchSnapshot();
-  });
-
-  it('expect to render with unsupported hosts', () => {
-    const wrapper = shallow(
-      <CompliantSystems {...deftaultProps} unsupportedHostCount={42} />
-    );
-
-    expect(toJson(wrapper)).toMatchSnapshot();
+    expect(
+      screen.getByLabelText('Reports PDF download link'),
+    ).toBeInTheDocument();
   });
 });

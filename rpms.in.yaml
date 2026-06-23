@@ -1,0 +1,11 @@
+---
+contentOrigin:
+  repofiles:
+  - "./ubi.repo"
+arches:
+- x86_64
+moduleEnable:
+- nodejs:22
+packages:
+- nodejs
+- npm

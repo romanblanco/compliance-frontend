@@ -1,0 +1,9 @@
+node_modules
+dist
+.git
+.cache
+coverage-*
+.env
+cypress/downloads
+cypress/screenshots
+cypress/videos

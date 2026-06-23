@@ -26,6 +26,9 @@ module.exports = {
             ...(process.env.SENTRY_AUTH_TOKEN && {
               authToken: process.env.SENTRY_AUTH_TOKEN,
             }),
+            ...(process.env.SENTRY_RELEASE && {
+              release: process.env.SENTRY_RELEASE,
+            }),
             org: 'red-hat-it',
             project: 'compliance-rhel',
             moduleMetadata: ({ release }) => ({

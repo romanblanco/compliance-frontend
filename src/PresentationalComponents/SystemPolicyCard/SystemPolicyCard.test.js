@@ -1,35 +1,37 @@
-import React from 'react';
-import { render } from 'enzyme';
-import toJson from 'enzyme-to-json';
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
+
 import SystemPolicyCard from './SystemPolicyCard';
-import { IntlProvider } from 'react-intl';
 
 describe('SystemPolicyCard component', () => {
   const currentTime = new Date();
   currentTime.setMonth(currentTime.getMonth() - 6);
   const policy = {
-    rulesPassed: 30,
-    rulesFailed: 10,
+    failed_rule_count: 10,
     score: 75,
-    lastScanned: currentTime.toISOString(),
-    refId: 'xccdf_org.ssgproject.content_profile_pci-dss',
-    name: 'PCI-DSS Policy',
-    policyType: 'PCI-DSS v3 Control Baseline for Red Hat Enterprise Linux 7',
+    end_time: currentTime.toISOString(),
+    ref_id: 'xccdf_org.ssgproject.content_profile_pci-dss',
+    title: 'PCI-DSS Policy',
+    profile_title: 'PCI-DSS v3 Control Baseline for Red Hat Enterprise Linux 7',
     compliant: false,
     supported: true,
-    ssgVersion: '0.1.45',
-    policy: {
-      name: 'PCI-DSS Policy',
-    },
+    security_guide_version: '0.1.45',
   };
 
-  it('should render policy', () => {
-    const wrapper = render(
-      <IntlProvider locale={navigator.language}>
-        <SystemPolicyCard policy={policy} />
-      </IntlProvider>
-    );
-    expect(toJson(wrapper)).toMatchSnapshot();
+  it('should render non compliant policy', () => {
+    render(<SystemPolicyCard policy={policy} />);
+
+    expect(screen.getByText('Not compliant')).toBeInTheDocument();
+  });
+
+  it('should render compliant policy', () => {
+    const compliantPolicy = {
+      ...policy,
+      compliant: true,
+    };
+    render(<SystemPolicyCard policy={compliantPolicy} />);
+
+    expect(screen.getByText('Compliant')).toBeInTheDocument();
   });
 
   it('should render an unsupported policy', () => {
@@ -37,11 +39,10 @@ describe('SystemPolicyCard component', () => {
       ...policy,
       supported: false,
     };
-    const wrapper = render(
-      <IntlProvider locale={navigator.language}>
-        <SystemPolicyCard policy={unsupportedPolicy} />
-      </IntlProvider>
-    );
-    expect(toJson(wrapper)).toMatchSnapshot();
+    render(<SystemPolicyCard policy={unsupportedPolicy} />);
+
+    expect(
+      screen.getByText('Unsupported SSG version (0.1.45)'),
+    ).toBeInTheDocument();
   });
 });

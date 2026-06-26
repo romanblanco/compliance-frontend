@@ -3,26 +3,45 @@ import propTypes from 'prop-types';
 import { NotConnected } from '@redhat-cloud-services/frontend-components/NotConnected';
 import NoPoliciesState from './NoPoliciesState';
 import NoReportsState from './NoReportsState';
+import useSystem from 'Utilities/hooks/api/useSystem';
+import { Bullseye, Spinner } from '@patternfly/react-core';
 
-const EmptyState = ({ system, isWrapped }) => {
-  if (
-    isWrapped &&
-    !system?.hasPolicy &&
-    system?.testResultProfiles?.length === 0
-  ) {
-    return <NotConnected />;
+const EmptyState = ({ inventoryId: systemId, system, connectedToInsights }) => {
+  // request system data in case Inventory details Compliance opened
+  const { data: { data } = {}, loading: systemLoading } = useSystem({
+    params: { systemId },
+    skip: !system && connectedToInsights === false,
+  });
+
+  const policiesCount = system?.policies.length ?? data?.policies.length;
+
+  if (connectedToInsights === false) {
+    return (
+      <NotConnected
+        titleText={`This system isn’t connected to Red Hat Lightspeed yet`}
+      />
+    );
+  }
+
+  if (systemLoading === true) {
+    return (
+      <Bullseye>
+        <Spinner />
+      </Bullseye>
+    );
+  }
+
+  if (policiesCount === 0) {
+    return <NoPoliciesState />;
   } else {
-    if (!system?.hasPolicy) {
-      return <NoPoliciesState system={system} />;
-    } else if (system?.hasPolicy && system?.testResultProfiles?.length === 0) {
-      return <NoReportsState system={system} />;
-    }
+    return <NoReportsState policiesCount={policiesCount} />;
   }
 };
 
 EmptyState.propTypes = {
+  inventoryId: propTypes.string,
   system: propTypes.object,
-  isWrapped: propTypes.bool,
+  connectedToInsights: propTypes.bool,
 };
 
 export default EmptyState;

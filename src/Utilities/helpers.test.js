@@ -1,13 +1,10 @@
 import {
-  camelCase,
-  getProperty,
   uniq,
   sortingByProp,
-  orderByArray,
+  buildOSObject,
+  capitalizeWord,
+  stringToSentenceCase,
 } from './helpers';
-import items, {
-  severityLevels,
-} from './hooks/useTableTools/__fixtures__/items';
 
 describe('uniq', () => {
   it('should deduplicate items', () => {
@@ -79,46 +76,36 @@ describe('sortingByProp', () => {
   });
 });
 
-describe('orderByArray', () => {
-  const exampleItems = items(10);
+describe('buildOSObject', () => {
+  const osArray = ['6.9', '7.8'];
 
-  it('sorts an array asc', () => {
-    expect(
-      orderByArray(exampleItems, 'severity', severityLevels, 'asc')
-    ).toMatchSnapshot();
+  it('should build an array of OS objects', () => {
+    const result = buildOSObject(osArray);
+    expect(result).toEqual([
+      { count: 0, value: { major: '6', minor: '9', name: 'RHEL' } },
+      { count: 0, value: { major: '7', minor: '8', name: 'RHEL' } },
+    ]);
   });
 
-  it('sorts an array desc', () => {
-    expect(
-      orderByArray(exampleItems, 'severity', severityLevels, 'desc')
-    ).toMatchSnapshot();
-  });
-});
-
-describe('camelCase', () => {
-  it('should camelCase a string', () => {
-    expect(camelCase('TESTCase')).toMatchSnapshot();
-    expect(camelCase('testCase')).toMatchSnapshot();
-    expect(camelCase('test-Case')).toMatchSnapshot();
-    expect(camelCase('test_Case')).toMatchSnapshot();
-    expect(camelCase('Test Case With Multiple Words')).toMatchSnapshot();
+  it('should ignore invalid input', () => {
+    const result = buildOSObject([...osArray, null, undefined, 7.8]);
+    expect(result).toEqual([
+      { count: 0, value: { major: '6', minor: '9', name: 'RHEL' } },
+      { count: 0, value: { major: '7', minor: '8', name: 'RHEL' } },
+    ]);
   });
 });
 
-describe('getPropery', () => {
-  const object = {
-    level1: {
-      level2: {
-        level3: {
-          value: 'value-level-3',
-        },
-        value: 'value-level-2',
-      },
-    },
-  };
+describe('capitalizeWord', () => {
+  it('should capitalize single word', () => {
+    const result = capitalizeWord('foobar');
+    expect(result).toEqual('Foobar');
+  });
+});
 
-  it('should return values of keys', () => {
-    expect(getProperty(object, 'level1.level2.level3.value')).toMatchSnapshot();
-    expect(getProperty(object, 'level1.level2.value')).toMatchSnapshot();
+describe('stringToSentenceCase', () => {
+  it('should apply sentence case to string', () => {
+    const result = stringToSentenceCase('this Is A Test String');
+    expect(result).toEqual('This is a test string');
   });
 });

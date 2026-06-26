@@ -1,5 +1,4 @@
 import { fitContent } from '@patternfly/react-table';
-import { renderComponent } from 'Utilities/helpers';
 import {
   Name as NameCell,
   OperatingSystem as OperatingSystemCell,
@@ -9,60 +8,48 @@ import {
 
 export const Name = {
   title: 'Policy',
-  sortByProp: 'name',
+  sortable: 'title',
   props: {
     width: 60,
   },
-  exportKey: 'name',
-  renderFunc: renderComponent(NameCell),
+  exportKey: 'title',
+  Component: NameCell,
 };
 
 export const OperatingSystem = {
   title: 'Operating system',
   transforms: [fitContent],
-  sortByProp: 'majorOsVersion',
+  sortable: 'os_major_version',
   props: {
     width: 20,
   },
-  renderExport: ({ majorOsVersion }) => `RHEL ${majorOsVersion} `,
-  renderFunc: renderComponent(OperatingSystemCell),
+  renderExport: ({ os_major_version }) => `RHEL ${os_major_version} `,
+  Component: OperatingSystemCell,
 };
 
 export const CompliantSystems = {
   title: 'Systems meeting compliance',
   transforms: [fitContent],
-  sortByFunction: ({ testResultHostCount, compliantHostCount }) =>
-    (100 / testResultHostCount) * compliantHostCount,
-  props: {
-    width: 20,
-  },
+  sortable: 'percent_compliant',
   renderExport: ({
-    testResultHostCount = 0,
-    compliantHostCount = 0,
-    unsupportedHostCount = 0,
+    reported_system_count = 0,
+    compliant_system_count = 0,
+    unsupported_system_count = 0,
   }) =>
-    `${compliantHostCount} of ${testResultHostCount} systems${
-      unsupportedHostCount > 0 ? ` | ${unsupportedHostCount} unsupported` : ''
+    `${compliant_system_count} of ${reported_system_count} systems${
+      unsupported_system_count > 0
+        ? ` | ${unsupported_system_count} unsupported`
+        : ''
     }`,
-  renderFunc: renderComponent(CompliantSystemsCell),
+  Component: CompliantSystemsCell,
 };
 
 export const PDFExportDownload = {
   title: '',
-  renderFunc: renderComponent(PDFExportDownloadCell),
-  managable: false,
+  Component: PDFExportDownloadCell,
+  manageable: false,
 };
 
-const PolicyType = {
-  title: 'Policy Type',
-  renderExport: (profile) => profile.policyType,
-};
-
-export const exportableColumns = [
-  Name,
-  PolicyType,
-  OperatingSystem,
-  CompliantSystems,
-];
+export const exportableColumns = [Name, OperatingSystem, CompliantSystems];
 
 export default [Name, OperatingSystem, CompliantSystems];

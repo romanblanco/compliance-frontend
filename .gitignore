@@ -20,4 +20,18 @@ yarn-error.log*
 yarn.lock
 
 .DS_Store
-coverage
+codecov*
+coverage-*
+coverage/*
+.nyc_output
+
+# cypress
+cypress/downloads
+cypress/screenshots
+cypress/videos
+
+.cache/*
+docs/*
+
+# Sentry Config File
+.env.sentry-build-plugin

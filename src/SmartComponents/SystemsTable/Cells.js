@@ -1,28 +1,25 @@
 import React, { Fragment } from 'react';
 import propTypes from 'prop-types';
-import { Link } from 'react-router-dom';
 import {
-  Text,
-  TextContent,
-  TextVariants,
+  Content,
+  ContentVariants,
   Tooltip,
+  Icon,
 } from '@patternfly/react-core';
 import { ExclamationTriangleIcon } from '@patternfly/react-icons';
 
 import DateFormat from '@redhat-cloud-services/frontend-components/DateFormat';
 import Truncate from '@redhat-cloud-services/frontend-components/Truncate';
-import {
-  UnsupportedSSGVersion,
-  ComplianceScore as complianceScore,
-} from 'PresentationalComponents';
-import {
-  profilesRulesFailed,
-  complianceScoreData,
-  NEVER,
-} from 'Utilities/ruleHelpers';
+import InsightsLink from '@redhat-cloud-services/frontend-components/InsightsLink';
+import { ComplianceScore as PresentationalComplianceScore } from 'PresentationalComponents';
+import { unsupportedSystemWarningMessage } from '@/constants';
+
+const NEVER = 'Never';
 
 const SystemLink = ({ id, children }) => (
-  <Link to={{ pathname: `/systems/${id}` }}>{children}</Link>
+  <InsightsLink app="compliance" to={{ pathname: `/systems/${id}` }}>
+    {children}
+  </InsightsLink>
 );
 
 SystemLink.propTypes = {
@@ -30,11 +27,54 @@ SystemLink.propTypes = {
   children: propTypes.node,
 };
 
+export const CustomDisplay = (props) => {
+  const {
+    os_major_version: osMajorVersion,
+    os_minor_version: osMinorVersion,
+    showOsInfo = false,
+    showLink = false,
+    idProperty = 'id',
+    nameProperty = 'display_name',
+  } = props;
+  const hasOsInfo = (osMajorVersion, osMinorVersion) =>
+    !!osMajorVersion && !!osMinorVersion && showOsInfo;
+
+  const customId = props[idProperty];
+  const customName = props[nameProperty];
+
+  return (
+    <Content>
+      {showLink ? (
+        <SystemLink {...{ id: customId }}>{customName}</SystemLink>
+      ) : (
+        { customName }
+      )}
+
+      {hasOsInfo(osMajorVersion, osMinorVersion) && (
+        <Content component={ContentVariants.small}>
+          RHEL {osMajorVersion}.{osMinorVersion}
+        </Content>
+      )}
+    </Content>
+  );
+};
+
+CustomDisplay.propTypes = {
+  id: propTypes.string,
+  display_name: propTypes.string,
+  os_major_version: propTypes.string,
+  os_minor_version: propTypes.string,
+  showOsInfo: propTypes.bool,
+  showLink: propTypes.bool,
+  idProperty: propTypes.string,
+  nameProperty: propTypes.string,
+};
+
 export const Name = ({
   id,
-  name,
-  osMajorVersion,
-  osMinorVersion,
+  display_name: name,
+  os_major_version: osMajorVersion,
+  os_minor_version: osMinorVersion,
   showOsInfo = false,
   showLink = false,
 }) => {
@@ -42,40 +82,39 @@ export const Name = ({
     !!osMajorVersion && !!osMinorVersion && showOsInfo;
 
   return (
-    <TextContent>
+    <Content>
       {showLink ? <SystemLink {...{ id }}>{name}</SystemLink> : name}
 
       {hasOsInfo(osMajorVersion, osMinorVersion) && (
-        <Text component={TextVariants.small}>
+        <Content component={ContentVariants.small}>
           RHEL {osMajorVersion}.{osMinorVersion}
-        </Text>
+        </Content>
       )}
-    </TextContent>
+    </Content>
   );
 };
 
 Name.propTypes = {
   id: propTypes.string,
-  name: propTypes.string,
-  osMajorVersion: propTypes.string,
-  osMinorVersion: propTypes.string,
+  display_name: propTypes.string,
+  os_major_version: propTypes.string,
+  os_minor_version: propTypes.string,
   showOsInfo: propTypes.bool,
   showLink: propTypes.bool,
 };
-
-export const profilesSsgVersions = (profiles) =>
-  profiles
-    .map((p) => p.ssgVersion)
-    .filter((version) => !!version)
-    .join(', ');
 
 export const SSGVersion = ({ ssgVersion = 'Not available', supported }) =>
   supported ? (
     ssgVersion
   ) : (
-    <UnsupportedSSGVersion messageVariant="singular">
-      {ssgVersion}
-    </UnsupportedSSGVersion>
+    <>
+      <Tooltip content={unsupportedSystemWarningMessage}>
+        <Icon status="warning">
+          <ExclamationTriangleIcon />
+        </Icon>
+      </Tooltip>
+      {' ' + ssgVersion}
+    </>
   );
 
 SSGVersion.propTypes = {
@@ -83,64 +122,63 @@ SSGVersion.propTypes = {
   ssgVersion: propTypes.string,
 };
 
-export const SSGVersions = ({ testResultProfiles = [] }) =>
-  testResultProfiles.length !== 0
-    ? testResultProfiles.map((profile) => (
-        <SSGVersion key={`ssgversion-${profile.id}`} {...profile} />
-      ))
-    : 'Unknown';
+export const SSGVersions = ({ security_guide_version, supported }) =>
+  security_guide_version ? (
+    <SSGVersion ssgVersion={security_guide_version} supported={supported} />
+  ) : (
+    'Unknown'
+  );
 
 SSGVersions.propTypes = {
-  testResultProfiles: propTypes.array,
+  security_guide_version: propTypes.string,
+  supported: propTypes.bool,
 };
 
-export const DetailsLink = ({ id, testResultProfiles = [] }) =>
-  testResultProfiles.length > 0 ? (
-    <SystemLink {...{ id }}>View Report</SystemLink>
-  ) : (
-    ''
-  );
-
-DetailsLink.propTypes = {
-  id: propTypes.string,
-  testResultProfiles: propTypes.array,
+const getTruncateLength = (policies) => {
+  const additionalCharLength = 4; // for the commas and spaces
+  if ((policies || []).length > 2) {
+    return (
+      policies[0].title.length + policies[1].title.length + additionalCharLength
+    );
+  }
+  return 215;
 };
 
-export const Policies = ({ policies }) =>
-  (policies || []).length > 0 && (
-    <Truncate
-      inline
-      text={policies.map((p) => p.name).join(', ')}
-      length={215}
-    />
+export const Policies = ({ policies }) => {
+  const truncateLength = getTruncateLength(policies);
+
+  return (
+    (policies || []).length && (
+      <Truncate
+        inline
+        text={policies.map((p) => p.title).join(', ')}
+        length={truncateLength}
+      />
+    )
   );
+};
 
 Policies.propTypes = {
   policies: propTypes.array,
 };
 
-export const FailedRules = ({ id, testResultProfiles }) => {
-  const rulesFailed = profilesRulesFailed(testResultProfiles).length;
-  return (
-    <SystemLink {...{ id }}>
-      {testResultProfiles.length > 0 ? rulesFailed : 'N/A'}
-    </SystemLink>
-  );
+export const FailedRules = ({ system_id, failed_rule_count }) => {
+  return <SystemLink {...{ id: system_id }}>{failed_rule_count}</SystemLink>;
 };
 
 FailedRules.propTypes = {
-  id: propTypes.string,
-  testResultProfiles: propTypes.array,
+  system_id: propTypes.string,
+  failed_rule_count: propTypes.number,
 };
 
-export { complianceScoreData };
-export const ComplianceScore = ({ testResultProfiles }) =>
-  testResultProfiles.length > 0
-    ? complianceScore(complianceScoreData(testResultProfiles))
-    : 'N/A';
+export const ComplianceScore = ({ score, supported, compliant }) => {
+  return <PresentationalComplianceScore {...{ score, supported, compliant }} />;
+};
 
 ComplianceScore.propTypes = {
-  testResultProfiles: propTypes.array,
+  score: propTypes.number,
+  supported: propTypes.bool,
+  compliant: propTypes.bool,
 };
 
 const NeverScanned = () => (
@@ -154,40 +192,38 @@ const NeverScanned = () => (
       </Fragment>
     }
   >
-    <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
-    {' ' + NEVER}
+    <span>
+      <ExclamationTriangleIcon color="var(--pf-t--global--color--status--warning--100)" />
+      {' ' + NEVER}
+    </span>
   </Tooltip>
 );
 
-export const lastScanned = (profiles) => {
-  const dates = profiles.map((profile) => new Date(profile.lastScanned));
-  const last = new Date(
-    Math.max.apply(
-      null,
-      dates.filter((date) => isFinite(date))
-    )
-  );
-  const result =
-    last instanceof Date && isFinite(last) ? last : <NeverScanned />;
-
-  return result;
+const parseValidDate = (dateString) => {
+  const date = dateString ? new Date(dateString) : null;
+  return date && isFinite(date) ? date : null;
 };
 
-export const LastScanned = ({ testResultProfiles: profiles }) => {
-  const lastScannedDate = lastScanned(profiles || []);
+export const lastScanned = (lastScannedTime) => {
+  const validDate = parseValidDate(lastScannedTime);
+  return validDate || NEVER;
+};
 
-  return lastScannedDate instanceof Date ? (
-    <DateFormat date={Date.parse(lastScannedDate)} type="relative" />
+export const LastScanned = ({ end_time: lastScannedTime }) => {
+  const validDate = parseValidDate(lastScannedTime);
+
+  return validDate ? (
+    <DateFormat date={Date.parse(validDate)} type="relative" />
   ) : (
-    lastScannedDate
+    <NeverScanned />
   );
 };
 
 LastScanned.propTypes = {
-  testResultProfiles: propTypes.array,
+  end_time: propTypes.string,
 };
 
-export const operatingSystemString = ({ osMinorVersion, osMajorVersion }) =>
-  `RHEL ${osMajorVersion}.${osMinorVersion}`;
+export const operatingSystemString = ({ os_minor_version, os_major_version }) =>
+  `RHEL ${os_major_version}.${os_minor_version}`;
 
 export const OperatingSystem = (system) => operatingSystemString(system);

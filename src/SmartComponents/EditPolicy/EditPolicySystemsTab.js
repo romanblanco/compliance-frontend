@@ -1,29 +1,33 @@
-import React from 'react';
-import {
-  Alert,
-  AlertActionLink,
-  Text,
-  TextContent,
-} from '@patternfly/react-core';
+import React, { useMemo, useState } from 'react';
+import { Content } from '@patternfly/react-core';
 import propTypes from 'prop-types';
-import { SystemsTable } from 'SmartComponents';
-import { GET_SYSTEMS_WITHOUT_FAILED_RULES } from '../SystemsTable/constants';
-import { useHistory } from 'react-router-dom';
-import * as Columns from '../SystemsTable/Columns';
+import SystemsTable from 'SmartComponents/SystemsTable/SystemsTable';
+import * as Columns from 'SmartComponents/SystemsTable/Columns';
+import SystemsViewToggle, { SYSTEMS_VIEW } from './SystemsViewToggle';
 
-const EmptyState = ({ osMajorVersion }) => (
-  <React.Fragment>
-    <TextContent className="pf-u-mb-md">
-      <Text>
-        You do not have any <b>RHEL {osMajorVersion}</b> systems connected to
-        Insights and enabled for Compliance.
-      </Text>
-    </TextContent>
-    <TextContent className="pf-u-mb-md">
-      <Text>Connect RHEL {osMajorVersion} systems to Insights.</Text>
-    </TextContent>
-  </React.Fragment>
-);
+const systemTableColumns = [
+  Columns.Name,
+  Columns.Tags,
+  Columns.OperatingSystem(),
+];
+
+const EmptyState = ({ osMajorVersion }) => {
+  return (
+    <div data-testid="empty-state">
+      <Content className="pf-v6-u-mb-md">
+        <Content component="p">
+          You do not have any <b>RHEL {osMajorVersion}</b> systems connected to{' '}
+          Red Hat Lightspeed and enabled for Compliance.
+        </Content>
+      </Content>
+      <Content className="pf-v6-u-mb-md">
+        <Content component="p">
+          Connect RHEL {osMajorVersion} systems to Red Hat Lightspeed.
+        </Content>
+      </Content>
+    </div>
+  );
+};
 
 EmptyState.propTypes = {
   osMajorVersion: propTypes.string,
@@ -31,12 +35,12 @@ EmptyState.propTypes = {
 
 const PrependComponent = ({ osMajorVersion }) => (
   <React.Fragment>
-    <TextContent className="pf-u-mb-md">
-      <Text>
+    <Content className="pf-v6-u-mb-md" data-testid="prepend-component">
+      <Content component="p">
         Select which of your <b>RHEL {osMajorVersion}</b> systems should be
         included in this policy.
-      </Text>
-    </TextContent>
+      </Content>
+    </Content>
   </React.Fragment>
 );
 
@@ -45,64 +49,60 @@ PrependComponent.propTypes = {
 };
 
 const EditPolicySystemsTab = ({
-  policy: { id: policyId, osMajorVersion },
-  newRuleTabs,
+  policy,
   onSystemSelect,
   selectedSystems,
+  supportedOsVersions,
+  setIsSystemsDataLoading,
 }) => {
-  const { push, location } = useHistory();
+  const { id: policyId, os_major_version } = policy;
+  const [systemsView, setSystemsView] = useState(SYSTEMS_VIEW.ALL);
+  const isAllSystemsView = systemsView === SYSTEMS_VIEW.ALL;
+
+  const defaultFilter = useMemo(
+    () =>
+      os_major_version &&
+      `os_major_version = ${os_major_version} AND os_minor_version ^ (${supportedOsVersions.join(
+        ' ',
+      )})`,
+    [os_major_version, supportedOsVersions],
+  );
 
   return (
-    <React.Fragment>
-      <SystemsTable
-        columns={[
-          Columns.Name,
-          Columns.inventoryColumn('tags'),
-          Columns.OperatingSystem,
-        ]}
-        showOsMinorVersionFilter={[osMajorVersion]}
-        prependComponent={<PrependComponent osMajorVersion={osMajorVersion} />}
-        emptyStateComponent={<EmptyState osMajorVersion={osMajorVersion} />}
-        compact
-        showActions={false}
-        query={GET_SYSTEMS_WITHOUT_FAILED_RULES}
-        defaultFilter={
-          osMajorVersion &&
-          `os_major_version = ${osMajorVersion} or policy_id = ${policyId}`
-        }
-        enableExport={false}
-        remediationsEnabled={false}
-        preselectedSystems={selectedSystems}
-        onSelect={onSystemSelect}
-      />
-      {newRuleTabs && (
-        <Alert
-          variant="info"
-          isInline
-          title="You selected a system that has a release version previously not included in this policy."
-          actionLinks={
-            <AlertActionLink
-              onClick={() => push({ ...location, hash: '#rules' })}
-            >
-              Open rule editing
-            </AlertActionLink>
-          }
-        >
-          <p>
-            If you have edited any rules for this policy, you will need to do so
-            for this release version as well.
-          </p>
-        </Alert>
-      )}
-    </React.Fragment>
+    <SystemsTable
+      key={systemsView}
+      apiEndpoint={isAllSystemsView ? 'systems' : 'policySystems'}
+      policyId={isAllSystemsView ? undefined : policyId}
+      columns={systemTableColumns}
+      prependComponent={<PrependComponent osMajorVersion={os_major_version} />}
+      emptyStateComponent={
+        isAllSystemsView ? (
+          <EmptyState osMajorVersion={os_major_version} />
+        ) : undefined
+      }
+      compact
+      defaultFilter={isAllSystemsView ? defaultFilter : undefined}
+      ignoreOsMajorVersion={!isAllSystemsView}
+      preselectedSystems={selectedSystems}
+      onSelect={onSystemSelect}
+      setIsSystemsDataLoading={setIsSystemsDataLoading}
+      enableExport={false}
+      dedicatedAction={
+        <SystemsViewToggle
+          systemsView={systemsView}
+          onSystemsViewChange={setSystemsView}
+        />
+      }
+    />
   );
 };
 
 EditPolicySystemsTab.propTypes = {
   policy: propTypes.object,
-  newRuleTabs: propTypes.bool,
   onSystemSelect: propTypes.func,
   selectedSystems: propTypes.array,
+  supportedOsVersions: propTypes.array,
+  setIsSystemsDataLoading: propTypes.func,
 };
 
 export default EditPolicySystemsTab;

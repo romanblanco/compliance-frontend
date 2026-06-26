@@ -1,36 +1,37 @@
 import React from 'react';
 import {
-  QuestionCircleIcon,
   CheckCircleIcon,
   ExclamationCircleIcon,
 } from '@patternfly/react-icons';
-import { Text, Tooltip } from '@patternfly/react-core';
+import { Content, Tooltip, Icon } from '@patternfly/react-core';
 import { fixedPercentage } from 'Utilities/TextHelper';
 
 const CompliantIcon = (system) => {
-  if (system.rulesPassed + system.rulesFailed === 0) {
-    return <QuestionCircleIcon color="var(--pf-global--disabled-color--100)" />;
-  } else {
+  {
     return system.compliant ? (
-      <CheckCircleIcon color="var(--pf-global--success-color--200)" />
+      <Icon status="success">
+        <CheckCircleIcon />
+      </Icon>
     ) : (
-      <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+      <Icon status="danger">
+        <ExclamationCircleIcon />
+      </Icon>
     );
   }
 };
 
 export const complianceScoreString = (system) => {
-  if (system.supported === false) {
+  if (!system.supported) {
     return ' Unsupported';
-  } else if (system.rulesPassed + system.rulesFailed === 0) {
+  } else if (!system.score && system.score !== 0) {
     return ' N/A';
+  } else {
+    return ' ' + fixedPercentage(system.score);
   }
-
-  return ' ' + fixedPercentage(system.score);
 };
 
 const ComplianceScore = (system) => (
-  <Text>
+  <Content component="p">
     {system.supported ? (
       <Tooltip
         content={
@@ -38,16 +39,18 @@ const ComplianceScore = (system) => (
           'is a normalized weighted sum of rules selected for this policy.'
         }
       >
-        <CompliantIcon
-          key={`system-compliance-icon-${system.id}`}
-          {...system}
-        />
-        {complianceScoreString(system)}
+        <span>
+          <CompliantIcon
+            key={`system-compliance-icon-${system.id}`}
+            {...system}
+          />
+          {' ' + complianceScoreString(system)}
+        </span>
       </Tooltip>
     ) : (
       complianceScoreString(system)
     )}
-  </Text>
+  </Content>
 );
 
 export default ComplianceScore;

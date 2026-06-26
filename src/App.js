@@ -1,45 +1,57 @@
 import PropTypes from 'prop-types';
 import React, { useEffect } from 'react';
-import routerParams from '@redhat-cloud-services/frontend-components-utilities/RouterParams';
-import { Routes } from './Routes';
-import NotificationsPortal from '@redhat-cloud-services/frontend-components-notifications/NotificationPortal';
-import './App.scss';
-import { useSetFlagsFromUrl } from 'Utilities/hooks/useFeature';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-const appNavClick = {
-  reports(redirect) {
-    insights.chrome.appNavClick({ id: 'reports', redirect });
-  },
-  scappolicies(redirect) {
-    insights.chrome.appNavClick({ id: 'scappolicies', redirect });
-  },
-  systems(redirect) {
-    insights.chrome.appNavClick({ id: 'systems', redirect });
-  },
-};
+import NotificationsProvider from '@redhat-cloud-services/frontend-components-notifications/NotificationsProvider';
+import { RBACProvider } from '@redhat-cloud-services/frontend-components/RBACProvider';
+import useChrome from '@redhat-cloud-services/frontend-components/useChrome';
+import useFeatureFlag from 'Utilities/hooks/useFeatureFlag';
+import { AccessCheck } from '@project-kessel/react-kessel-access-check';
+import { KESSEL_API_BASE_URL } from '@/constants';
+import { useFlagsStatus } from '@unleash/proxy-client-react';
+import { Bullseye, Spinner } from '@patternfly/react-core';
+
+import Routes from './Routes';
+import './App.scss';
+
+const queryClient = new QueryClient();
 
 const App = (props) => {
-  useSetFlagsFromUrl();
-  useEffect(() => {
-    insights.chrome.init();
-    insights.chrome?.hideGlobalFilter?.();
-    insights.chrome.identifyApp('compliance');
-    const baseComponentUrl = props.location.pathname.split('/')[1] || 'reports';
-    const unregister = insights.chrome.on('APP_NAVIGATION', (event) => {
-      if (event.domEvent) {
-        props.history.push(`/${event.navId}`);
-        appNavClick[baseComponentUrl](true);
-      }
-    });
+  const chrome = useChrome();
+  const isKesselEnabled = useFeatureFlag('compliance.kessel_enabled');
+  const { flagsReady } = useFlagsStatus();
 
-    return () => unregister();
-  }, []);
+  useEffect(() => {
+    chrome.hideGlobalFilter(true);
+  }, [chrome]);
+
+  if (!flagsReady) {
+    return (
+      <Bullseye>
+        <Spinner size="xl" />
+      </Bullseye>
+    );
+  }
 
   return (
-    <React.Fragment>
-      <NotificationsPortal />
-      <Routes childProps={props} />
-    </React.Fragment>
+    <QueryClientProvider client={queryClient}>
+      {isKesselEnabled ? (
+        <AccessCheck.Provider
+          baseUrl={window.location.origin}
+          apiPath={KESSEL_API_BASE_URL}
+        >
+          <NotificationsProvider>
+            <Routes childProps={props} />
+          </NotificationsProvider>
+        </AccessCheck.Provider>
+      ) : (
+        <RBACProvider appName="compliance">
+          <NotificationsProvider>
+            <Routes childProps={props} />
+          </NotificationsProvider>
+        </RBACProvider>
+      )}
+    </QueryClientProvider>
   );
 };
 
@@ -48,4 +60,4 @@ App.propTypes = {
   history: PropTypes.object,
 };
 
-export default routerParams(App);
+export default App;

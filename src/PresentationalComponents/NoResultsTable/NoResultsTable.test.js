@@ -1,15 +1,14 @@
-import NoResultsTable, { emptyRows } from './NoResultsTable';
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
+
+import { NoResultsTable } from './NoResultsTable';
 
 describe('NoResultsTable', () => {
   it('expect to render without error', () => {
-    const wrapper = shallow(<NoResultsTable />);
+    render(<NoResultsTable />);
 
-    expect(toJson(wrapper)).toMatchSnapshot();
-  });
-});
-
-describe('emptyRows', () => {
-  it('expect to render without error', () => {
-    expect(emptyRows).toMatchSnapshot();
+    expect(
+      screen.getByRole('heading', 'No matching results found'),
+    ).toBeInTheDocument();
   });
 });

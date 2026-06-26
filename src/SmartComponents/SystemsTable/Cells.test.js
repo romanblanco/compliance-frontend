@@ -1,89 +1,115 @@
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import TestWrapper from '@/Utilities/TestWrapper';
+
 import {
   Name,
-  SSGVersion,
-  DetailsLink,
+  SSGVersions,
   Policies,
   FailedRules,
   ComplianceScore,
   LastScanned,
+  lastScanned,
 } from './Cells';
 import { systems } from '@/__fixtures__/systems.js';
-const testSystem = systems[0].node;
+import { policies } from '@/__fixtures__/policies.js';
+const testSystem = systems[0];
+
+jest.mock('Utilities/hooks/useFeatureFlag', () => () => true);
 
 describe('Name', () => {
-  it('returns', () => {
-    expect(renderJson(<Name {...testSystem} />)).toMatchSnapshot();
+  it('returns the name', () => {
+    render(<Name {...testSystem} />);
+
+    expect(screen.getByText(testSystem.display_name)).toBeInTheDocument();
   });
 });
 
-describe('SSGVersion', () => {
+describe('SSGVersions', () => {
   it('returns', () => {
-    expect(renderJson(<SSGVersion {...testSystem} />)).toMatchSnapshot();
+    render(<SSGVersions security_guide_version="0.14.3" supported={true} />);
+
+    expect(screen.getByText(/0\.14\.3/)).toBeInTheDocument();
   });
 
-  it('returns no error without testResultProfiles', () => {
-    expect(
-      renderJson(<SSGVersion {...testSystem} testResultProfiles={[]} />)
-    ).toMatchSnapshot();
-  });
-});
-
-describe('DetailsLink', () => {
-  it('returns', () => {
-    expect(renderJson(<DetailsLink {...testSystem} />)).toMatchSnapshot();
+  it('returns no error without security_guide_version', () => {
+    render(<SSGVersions security_guide_version={null} supported={true} />);
+    expect(screen.getByText('Unknown')).toBeInTheDocument();
   });
 });
 
 describe('Policies', () => {
-  it('returns', () => {
-    expect(renderJson(<Policies {...testSystem} />)).toMatchSnapshot();
-  });
+  it('returns the system policies', () => {
+    render(<Policies policies={policies} />);
 
-  it('returns without error without policies', () => {
-    expect(
-      renderJson(<Policies {...testSystem} policies={undefined} />)
-    ).toMatchSnapshot();
+    const expectedText = `${policies[0].title}, ${policies[1].title}`;
+    expect(screen.getByText(new RegExp(expectedText))).toBeInTheDocument();
+    expect(screen.getByText('Read more')).toBeInTheDocument();
   });
 });
 
 describe('FailedRules', () => {
-  it('returns', () => {
-    expect(renderJson(<FailedRules {...testSystem} />)).toMatchSnapshot();
+  it('returns the amount of failed rules', () => {
+    render(
+      <TestWrapper>
+        <FailedRules system_id={testSystem.id} failed_rule_count={28} />
+      </TestWrapper>,
+    );
+
+    expect(screen.getByText('28')).toBeInTheDocument();
   });
 
-  it('returns no error without testResultProfiles', () => {
-    expect(
-      renderJson(<FailedRules {...testSystem} testResultProfiles={[]} />)
-    ).toMatchSnapshot();
+  it('returns no error without failed rules', () => {
+    render(
+      <TestWrapper>
+        <FailedRules system_id={testSystem.id} failed_rule_count={0} />
+      </TestWrapper>,
+    );
+
+    expect(screen.getByText('0')).toBeInTheDocument();
   });
 });
 
 describe('ComplianceScore', () => {
   it('returns', () => {
-    expect(renderJson(<ComplianceScore {...testSystem} />)).toMatchSnapshot();
-  });
+    render(<ComplianceScore score={40} supported={true} compliant={false} />);
 
-  it('returns no error without testResultProfiles', () => {
-    expect(
-      renderJson(<ComplianceScore {...testSystem} testResultProfiles={[]} />)
-    ).toMatchSnapshot();
+    expect(screen.getByText('40%')).toBeInTheDocument();
   });
 });
 
 describe('LastScanned', () => {
-  it('returns', () => {
-    expect(renderJson(<LastScanned {...testSystem} />)).toMatchSnapshot();
+  it('returns the relative date the system was last scanned', () => {
+    render(<LastScanned end_time="2018-03-16T03:44:05.923774Z" />);
+
+    expect(screen.getByText('8 years ago')).toBeInTheDocument();
   });
 
   it('returns NEVER', () => {
-    expect(
-      renderJson(<LastScanned {...testSystem} testResultProfiles={undefined} />)
-    ).toMatchSnapshot();
+    render(<LastScanned end_time={null} />);
+
+    expect(screen.getByText('Never')).toBeInTheDocument();
   });
 
-  it('returns no error without testResultProfiles', () => {
-    expect(
-      renderJson(<LastScanned {...testSystem} testResultProfiles={[]} />)
-    ).toMatchSnapshot();
+  it('returns no error without end_time', () => {
+    render(<LastScanned end_time={undefined} />);
+
+    expect(screen.getByText('Never')).toBeInTheDocument();
+  });
+});
+
+describe('lastScanned helper function', () => {
+  it('returns a Date object for valid date string', () => {
+    const dateString = '2018-03-16T03:44:05.923774Z';
+    const result = lastScanned(dateString);
+    const date = new Date(dateString);
+    expect(result).toBeInstanceOf(Date);
+    expect(result).toEqual(date);
+  });
+
+  it('returns "Never" for invalid date string', () => {
+    expect(lastScanned(null)).toBe('Never');
+    expect(lastScanned(undefined)).toBe('Never');
+    expect(lastScanned('invalid-date')).toBe('Never');
   });
 });

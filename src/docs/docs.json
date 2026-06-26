@@ -1,0 +1,16 @@
+{
+  "compliance": {
+    "title": "Compliance",
+    "children": {
+      "filter-serialiser": {
+        "title": "Using the Compliance `filterSerialiser`"
+      },
+      "how-to-use-tailorings": {
+        "title": "How to use Tailorings"
+      },
+      "glossary": {
+        "title": "Glossary"
+      }
+    }
+  }
+}

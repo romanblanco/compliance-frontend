@@ -1,11 +1,7 @@
-import { getAppConfig } from '@/config/appConfig';
-
-const IOP = 'iop';
-
 /**
- * IoP builds run without a live Compliance API. When true, query hooks return
- * fixture data instead of calling the network.
+ * When true, query hooks return fixture data instead of calling the network.
+ * Controlled by IOP_MOCK_API env var at build time (defaults to false).
  */
 export function isIopApiMocksEnabled() {
-  return getAppConfig().envTarget === IOP;
+  return process.env.IOP_MOCK_API === 'true';
 }

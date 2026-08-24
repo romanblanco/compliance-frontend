@@ -1,36 +1,70 @@
-import { useLocation } from 'react-router-dom';
-import { useMutation } from '@apollo/client';
-import { dispatchAction } from 'Utilities/Dispatcher';
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import { useParams } from 'react-router-dom';
+import useNavigate from '@redhat-cloud-services/frontend-components-utilities/useInsightsNavigate';
+import useDeleteReport from 'Utilities/hooks/api/useDeleteReport';
+import DeleteReport from './DeleteReport';
+
+jest.mock('Utilities/hooks/api/useDeleteReport');
 
 jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useLocation: jest.fn(),
+  useParams: jest.fn(),
 }));
-jest.mock('@apollo/client');
-jest.mock('Utilities/Dispatcher');
 
-import DeleteReport from './DeleteReport.js';
+jest.mock(
+  '@redhat-cloud-services/frontend-components-utilities/useInsightsNavigate',
+  () => ({
+    __esModule: true,
+    default: jest.fn(),
+  }),
+);
+
+jest.mock(
+  '@redhat-cloud-services/frontend-components-notifications/hooks',
+  () => ({
+    useAddNotification: jest.fn(() => jest.fn()),
+  }),
+);
 
 describe('DeleteReport', () => {
+  const navigateMocked = jest.fn();
+  useNavigate.mockImplementation(() => navigateMocked);
+  const reportId = '12345';
+  const deleteReportQuery = jest.fn();
+
   beforeEach(() => {
-    useLocation.mockImplementation(() => ({
-      state: {
-        profile: { id: 'ID1' },
-      },
-    }));
-    useMutation.mockImplementation((query, options) => {
-      return [
-        function () {
-          options.onCompleted();
-        },
-      ];
+    jest.clearAllMocks();
+    useParams.mockReturnValue({ report_id: reportId });
+    deleteReportQuery.mockResolvedValue(undefined);
+    useDeleteReport.mockReturnValue({
+      query: deleteReportQuery,
     });
-    dispatchAction.mockImplementation(() => {});
   });
 
-  it('expect to render an open modal without error', () => {
-    const component = mount(<DeleteReport />);
+  test('renders DeleteReportRest', async () => {
+    render(<DeleteReport />);
 
-    expect(toJson(component)).toMatchSnapshot();
+    fireEvent.click(screen.getByText('Delete report'));
+
+    expect(useDeleteReport).toHaveBeenCalledWith({ skip: true });
+
+    await waitFor(() => {
+      expect(deleteReportQuery).toHaveBeenCalledWith({ reportId });
+      expect(navigateMocked).toHaveBeenCalledWith('/reports');
+    });
+  });
+
+  test('handles error during REST deletion', async () => {
+    const error = new Error('Deletion failed');
+    deleteReportQuery.mockRejectedValue(error);
+
+    render(<DeleteReport />);
+
+    fireEvent.click(screen.getByText('Delete report'));
+
+    await waitFor(() => {
+      expect(navigateMocked).toHaveBeenCalledWith(-1);
+    });
   });
 });

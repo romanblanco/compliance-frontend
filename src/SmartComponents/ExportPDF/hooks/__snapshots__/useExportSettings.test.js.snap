@@ -1,0 +1,18 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`useExportSettings returns an object to get and set export settings 1`] = `
+{
+  "current": {
+    "exportSettings": {
+      "compliantSystems": false,
+      "nonCompliantSystems": true,
+      "nonReportingSystems": true,
+      "topTenFailedRules": true,
+      "unsupportedSystems": true,
+      "userNotes": undefined,
+    },
+    "isValid": true,
+    "setExportSetting": [Function],
+  },
+}
+`;

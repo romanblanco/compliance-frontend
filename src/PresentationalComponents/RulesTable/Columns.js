@@ -1,5 +1,4 @@
-import { nowrap } from '@patternfly/react-table';
-import { renderComponent } from 'Utilities/helpers';
+import { fitContent, nowrap } from '@patternfly/react-table';
 import {
   Rule,
   Policy as PolicyCell,
@@ -10,40 +9,39 @@ import {
 
 export const Name = {
   title: 'Name',
-  sortByProp: 'title',
+  sortable: 'title',
   renderExport: ({ title, identifier }) =>
     `${title}${identifier ? ` - ${identifier.label}` : ''}`,
-  renderFunc: renderComponent(Rule),
+  Component: Rule,
 };
 
 export const Policy = {
   title: 'Policy',
-  sortByFunction: (rule) => rule?.profile?.name,
-  renderExport: (rule) => rule?.profile?.name,
-  renderFunc: renderComponent(PolicyCell),
+  renderExport: (rule) => rule.profile_name,
+  Component: PolicyCell,
 };
 
 export const Severity = {
   title: 'Severity',
-  sortByProp: 'severity',
+  sortable: 'severity',
   exportKey: 'severity',
-  sortByArray: ['high', 'medium', 'low', 'unknown'],
-  renderFunc: renderComponent(SeverityCell),
+  Component: SeverityCell,
 };
 
 export const Passed = {
-  title: 'Passed',
-  sortByProp: 'compliant',
+  title: 'Rule state',
+  sortable: 'result',
   renderExport: (rule) => (rule?.compliant ? 'Yes' : 'No'),
-  renderFunc: renderComponent(PassedCell),
+  Component: PassedCell,
+  transforms: [fitContent],
 };
 
 export const Remediation = {
-  title: 'Remediation',
+  title: 'Remediation type',
   transforms: [nowrap],
-  sortByFunction: (rule) => rule?.remediationAvailable,
-  renderExport: (rule) => (rule?.remediationAvailable ? 'Playbook' : 'Manual'),
-  renderFunc: renderComponent(RemediationColumnCell),
+  sortable: 'remediation_available',
+  renderExport: (rule) => (rule?.remediation_available ? 'Playbook' : 'Manual'),
+  Component: RemediationColumnCell,
 };
 
 export default [Name, Policy, Severity, Passed, Remediation];

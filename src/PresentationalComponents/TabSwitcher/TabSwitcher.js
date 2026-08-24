@@ -1,8 +1,9 @@
 import React from 'react';
-import { useLocation, useHistory } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import useNavigate from '@redhat-cloud-services/frontend-components-utilities/useInsightsNavigate';
 import propTypes from 'prop-types';
 import { Tabs } from '@patternfly/react-core';
-import { useAnchor } from 'Utilities/Router';
+import useAnchor from 'Utilities/hooks/useAnchor';
 
 // Plain tab component without any styling
 export const ContentTab = ({ children }) => children;
@@ -30,12 +31,13 @@ const TabSwitcher = ({ children, activeKey: currentAnchor, defaultTab }) => {
 };
 
 TabSwitcher.propTypes = {
-  activeTab: propTypes.number,
   children: propTypes.node,
+  currentAnchor: propTypes.string,
+  defaultTab: propTypes.string,
 };
 
 // Routed Plain switcher that can be used with PatternFly tabs
-export const RoutedTabSwitcher = ({ children, defaultTab, level }) => {
+export const RoutedTabSwitcher = ({ children, defaultTab, level = 0 }) => {
   const { currentAnchor } = useAnchorLevels(defaultTab, level);
 
   return <TabSwitcher activeKey={currentAnchor}>{children}</TabSwitcher>;
@@ -47,20 +49,16 @@ RoutedTabSwitcher.propTypes = {
   level: propTypes.number,
 };
 
-RoutedTabSwitcher.defaultProps = {
-  level: 0,
-};
-
 // Allows to use full PatternFly tabs and switch them using the URL hash
 // It can be used with filled tabs (EditPolicyForm) or just tab "buttons" (PolicyDetails)
 export const RoutedTabs = ({
   children,
   defaultTab,
-  level,
+  level = 0,
   ouiaId,
   ...props
 }) => {
-  const { push } = useHistory();
+  const navigate = useNavigate();
   const { pathname, state } = useLocation();
   const { currentAnchor, levels } = useAnchorLevels(defaultTab, level);
   const handleTabSelect = (e, eventKey) => {
@@ -69,7 +67,7 @@ export const RoutedTabs = ({
     let tabAnchor = levels;
     tabAnchor[level] = tabToActivate;
 
-    push({
+    navigate({
       state,
       to: pathname,
       hash: tabAnchor.slice(0, level + 1).join('|'),
@@ -89,10 +87,6 @@ export const RoutedTabs = ({
       {children}
     </Tabs>
   );
-};
-
-RoutedTabs.defaultProps = {
-  level: 0,
 };
 
 RoutedTabs.propTypes = {

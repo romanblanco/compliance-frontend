@@ -1,6 +1,6 @@
 import React from 'react';
 import propTypes from 'prop-types';
-import { List, ListItem, Tooltip, Popover } from '@patternfly/react-core';
+import { List, ListItem, Tooltip, Popover, Icon } from '@patternfly/react-core';
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
 
 const ChartIcon = ({ color = '#FFFFFF' }) => (
@@ -26,14 +26,16 @@ const ChartLegend = ({ legendData = [] }) => (
       <ListItem
         key={index}
         icon={<ChartIcon color={symbol?.fill} />}
-        style={{ verticalAlign: 'middle', display: 'inline-block' }}
+        style={{ verticalAlign: 'middle' }}
       >
         {name}
         {tooltip && (
           <Tooltip content={<> {tooltip} </>}>
             <span>
               &nbsp;
-              <OutlinedQuestionCircleIcon className="grey-icon" />
+              <Icon className="grey-icon">
+                <OutlinedQuestionCircleIcon />
+              </Icon>
             </span>
           </Tooltip>
         )}
@@ -47,10 +49,12 @@ const ChartLegend = ({ legendData = [] }) => (
             >
               <span>
                 &nbsp;
-                <OutlinedQuestionCircleIcon
+                <Icon
                   className="grey-icon"
-                  style={{ cursor: 'pointer' }}
-                />
+                  style={{ cursor: 'pointer', marginTop: '3px' }}
+                >
+                  <OutlinedQuestionCircleIcon />
+                </Icon>
               </span>
             </Popover>
           ))(popover)}

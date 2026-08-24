@@ -1,1 +1,6 @@
-* @RedHatInsights/compliance
+* @RedHatInsights/team-interact
+
+.tekton/*
+
+build-tools
+.gitmodules

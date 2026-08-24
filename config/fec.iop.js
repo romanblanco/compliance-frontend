@@ -19,6 +19,10 @@ const iopAliases = {
 module.exports = {
   ...base,
   appUrl: '/',
+  // Emit fed-mods.json baseURL "auto" so lazy webpack chunks resolve relative
+  // to where the manifest is served (/assets/apps/compliance/) under Foreman.
+  // Without this FEC bakes an absolute CDN path and chunks 404 (route to Rails).
+  publicPath: 'auto',
   definePlugin: { 'process.env.IOP': JSON.stringify('true') },
   deployment: 'assets/apps',
   standalone: true,

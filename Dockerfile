@@ -3,7 +3,7 @@ WORKDIR /opt/app-root/src
 COPY package*.json ./
 RUN npm ci
 COPY . .
-RUN npm run build
+RUN npm run build:iop
 
 FROM registry.access.redhat.com/ubi9/ubi-micro:latest
 ARG DIST_PATH=/opt/app-root/src/dist

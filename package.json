@@ -125,6 +125,7 @@
   },
   "scripts": {
     "build": "fec build",
+    "build:iop": "IOP=true fec build",
     "test": "jest --passWithNoTests",
     "test:nocoverage": "jest --passWithNoTests --no-coverage",
     "test:snapshots": "jest -u --passWithNoTests --no-coverage",

@@ -19,7 +19,7 @@
     "@project-kessel/react-kessel-access-check": "^0.5.7",
     "@redhat-cloud-services/compliance-client": "^3.0.7",
     "@redhat-cloud-services/frontend-components": "^7.10.3",
-    "@redhat-cloud-services/frontend-components-config-utilities": "^4.12.1",
+    "@redhat-cloud-services/frontend-components-config-utilities": "file:vendor/redhat-cloud-services-frontend-components-config-utilities-4.12.4.tgz",
     "@redhat-cloud-services/frontend-components-notifications": "^6.11.3",
     "@redhat-cloud-services/frontend-components-remediations": "^4.11.3",
     "@redhat-cloud-services/frontend-components-utilities": "^7.5.1",
@@ -50,6 +50,7 @@
     "victory": "^37.3.6"
   },
   "overrides": {
+    "@redhat-cloud-services/frontend-components-config-utilities": "file:vendor/redhat-cloud-services-frontend-components-config-utilities-4.12.4.tgz",
     "react-redux": "^8.1.3",
     "better-docs": {
       "react": "^18.2.0",
@@ -125,7 +126,7 @@
   },
   "scripts": {
     "build": "fec build",
-    "build:iop": "IOP=true fec build",
+    "build:iop": "IOP=true NODE_ENV=production webpack --config config/webpack.iop.js",
     "test": "jest --passWithNoTests",
     "test:nocoverage": "jest --passWithNoTests --no-coverage",
     "test:snapshots": "jest -u --passWithNoTests --no-coverage",
